@@ -164,22 +164,22 @@ class Test_phylo_module:
                       sp_naming_function=lambda name: name[:3])
         seed = t['SP1_a']
         events = t.get_descendant_evol_events(0.1)
-        assert t.common_ancestor([seed == 'SP3_a'].props.get('evoltype'), 'D')
-        assert t.common_ancestor([seed == 'SP1_c'].props.get('evoltype'), 'D')
+        assert t.common_ancestor([seed, 'SP3_a']).props.get('evoltype') == 'D'
+        assert t.common_ancestor([seed, 'SP1_c']).props.get('evoltype') == 'D'
 
         t = PhyloTree('(((SP1_a, SP2_a), (SP3_a, SP1_b)), (SP1_c, SP2_c));',
                       sp_naming_function=lambda name: name[:3])
         seed = t['SP1_a']
         events = t.get_descendant_evol_events(0.5)
-        assert t.common_ancestor([seed == 'SP3_a'].props.get('evoltype'), 'S')
-        assert t.common_ancestor([seed == 'SP1_c'].props.get('evoltype'), 'D')
+        assert t.common_ancestor([seed, 'SP3_a']).props.get('evoltype') == 'S'
+        assert t.common_ancestor([seed, 'SP1_c']).props.get('evoltype') == 'D'
 
         t = PhyloTree('(((SP1_a:1, SP2_a:1):1, (SP3_a:1, SP1_b:1):1):1, (SP1_c:1, SP2_c:1):1):0;',
                       sp_naming_function=lambda name: name[:3])
         seed = t['SP1_a']
         events = seed.get_my_evol_events(0.75)
-        assert t.common_ancestor([seed == 'SP3_a'].props.get('evoltype'), 'S')
-        assert t.common_ancestor([seed == 'SP1_c'].props.get('evoltype'), 'S')
+        assert t.common_ancestor([seed, 'SP3_a']).props.get('evoltype') == 'S'
+        assert t.common_ancestor([seed, 'SP1_c']).props.get('evoltype') == 'S'
 
     def test_get_sp_overlap_on_a_seed(self):
         """ Tests ortholgy prediction using sp overlap"""
@@ -271,22 +271,22 @@ class Test_phylo_module:
                       sp_naming_function=lambda name: name[:3])
         seed = t['SP1_a']
         events = seed.get_my_evol_events(0.1)
-        assert t.common_ancestor([seed == 'SP3_a'].props.get('evoltype'), 'D')
-        assert t.common_ancestor([seed == 'SP1_c'].props.get('evoltype'), 'D')
+        assert t.common_ancestor([seed, 'SP3_a']).props.get('evoltype') == 'D'
+        assert t.common_ancestor([seed, 'SP1_c']).props.get('evoltype') == 'D'
 
         t = PhyloTree('(((SP1_a:1, SP2_a:1):1, (SP3_a:1, SP1_b:1):1):1, (SP1_c:1, SP2_c:1):1):0;',
                       sp_naming_function=lambda name: name[:3])
         seed = t['SP1_a']
         events = seed.get_my_evol_events(0.50)
-        assert t.common_ancestor([seed == 'SP3_a'].props.get('evoltype'), 'S')
-        assert t.common_ancestor([seed == 'SP1_c'].props.get('evoltype'), 'D')
+        assert t.common_ancestor([seed, 'SP3_a']).props.get('evoltype') == 'S'
+        assert t.common_ancestor([seed, 'SP1_c']).props.get('evoltype') == 'D'
 
         t = PhyloTree('(((SP1_a:1, SP2_a:1):1, (SP3_a:1, SP1_b:1):1):1, (SP1_c:1, SP2_c:1):1):0;',
                       sp_naming_function=lambda name: name[:3])
         seed = t['SP1_a']
         events = seed.get_my_evol_events(0.75)
-        assert t.common_ancestor([seed == 'SP3_a'].props.get('evoltype'), 'S')
-        assert t.common_ancestor([seed == 'SP1_c'].props.get('evoltype'), 'S')
+        assert t.common_ancestor([seed, 'SP3_a']).props.get('evoltype') == 'S'
+        assert t.common_ancestor([seed, 'SP1_c']).props.get('evoltype') == 'S'
 
     def test_reconciliation(self):
         """ Tests ortholgy prediction based on the species reconciliation method"""
@@ -303,8 +303,8 @@ class Test_phylo_module:
         # gene loss, duplication, etc.
         expected_recon = "((Dme_001:1,Dme_002:1)1:1[&&NHX:evoltype=D],(((Cfa_001:1,Mms_001:1)1:1[&&NHX:evoltype=S],((Hsa_001:1,Ptr_001:1)1:1[&&NHX:evoltype=S],Mmu_001:1)1:1[&&NHX:evoltype=S])1:1[&&NHX:evoltype=S],((Mms:1[&&NHX:evoltype=L],Cfa:1[&&NHX:evoltype=L])1:1[&&NHX:evoltype=L],(((Hsa:1[&&NHX:evoltype=L],Ptr_002:1)1:1[&&NHX:evoltype=L],Mmu:1[&&NHX:evoltype=L])1:1[&&NHX:evoltype=L],((Ptr:1[&&NHX:evoltype=L],Hsa_002:1)1:1[&&NHX:evoltype=L],Mmu_002:1)1:1[&&NHX:evoltype=S])1:1[&&NHX:evoltype=D])1:1[&&NHX:evoltype=L])1:1[&&NHX:evoltype=D])[&&NHX:evoltype=S];"
 
-        assert recon_tree.write(props=["evoltype"] == parser=9,
-                         PhyloTree(expected_recon).write(props=["evoltype"], parser=9))
+        assert recon_tree.write(props=["evoltype"], parser=9) == \
+               PhyloTree(expected_recon).write(props=["evoltype"], parser=9)
 
     def test_miscelaneus(self):
         """ Test several things """

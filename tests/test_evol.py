@@ -134,11 +134,11 @@ class TestEvolEvolTree:
             tree = EvolTree('((seq1,seq2),seq3);')
             tree.link_to_alignment('>seq1\nATGCTG\n>seq2\nATGCTG\n>seq3\nTTGATG\n')
             tree.run_model('fb')
-            assert 'CODONML' in tree.get_evol_model('fb'.run)
-            assert 'Time used:' in tree.get_evol_model('fb'.run)
-            assert 'end of tree file' in tree.get_evol_model('fb'.run)
-            assert 'lnL' in tree.get_evol_model('fb'.run)
-            assert tree.get_descendants([0].w > 0)
+            assert 'CODONML' in tree.get_evol_model('fb').run
+            assert 'Time used:' in tree.get_evol_model('fb').run
+            assert 'end of tree file' in tree.get_evol_model('fb').run
+            assert 'lnL' in tree.get_evol_model('fb').run
+            assert tree.get_descendants()[0].w > 0
 
     def test_run_slr(self):
         if which('Slr'):
@@ -146,22 +146,22 @@ class TestEvolEvolTree:
             tree.link_to_alignment('>seq1\nCTGATTCTT\n>seq2\nCTGATTCTT\n>seq3\nATGATTCTT\n')
             tree.run_model('SLR')
             print(tree.get_evol_model('SLR').run)
-            assert 'Sitewise Likelihood R' in tree.get_evol_model('SLR'.run)
-            assert 'Positively selected s' in tree.get_evol_model('SLR'.run)
-            assert 'Conserved sites' in tree.get_evol_model('SLR'.run)
-            assert 'lnL' in tree.get_evol_model('SLR'.run)
+            assert 'Sitewise Likelihood R' in tree.get_evol_model('SLR').run
+            assert 'Positively selected s' in tree.get_evol_model('SLR').run
+            assert 'Conserved sites' in tree.get_evol_model('SLR').run
+            assert 'lnL' in tree.get_evol_model('SLR').run
 
     def test_marking_trees(self):
         TREE_PATH = DATAPATH + '/S_example/'
         tree = EvolTree (TREE_PATH + 'tree.nw')
-        assert tree.write() == '((Hylobates_lar,(Gorilla_gorilla,Pan_troglodytes),Papio_cynocephalus);')
+        assert tree.write() == '((Hylobates_lar,(Gorilla_gorilla,Pan_troglodytes)),Papio_cynocephalus);'
         tree.mark_tree ([1, 3, 7] + [2, 6], marks=['#1']*3 + ['#2']*2, verbose=True)
-        assert tree.write().replace(' ' == '',
-                         '((Hylobates_lar#2,(Gorilla_gorilla#1,Pan_troglodytes#1)#1)#2,Papio_cynocephalus);')
+        assert tree.write().replace(' ', '') == \
+               '((Hylobates_lar#2,(Gorilla_gorilla#1,Pan_troglodytes#1)#1)#2,Papio_cynocephalus);'
         tree.mark_tree ([x.props.get('node_id') for x in tree.get_descendants()],
                         marks=[''] * len (tree.get_descendants()), verbose=False)
-        assert tree.write().replace(' ' == '',
-                         '((Hylobates_lar,(Gorilla_gorilla,Pan_troglodytes)),Papio_cynocephalus);')
+        assert tree.write().replace(' ', '') == \
+               '((Hylobates_lar,(Gorilla_gorilla,Pan_troglodytes)),Papio_cynocephalus);'
 
     def test_pickling(self):
         tree = EvolTree(WRKDIR + 'tree.nw')

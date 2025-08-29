@@ -96,6 +96,3 @@ class Test_Core_SeqGroup(unittest.TestCase):
         alg.write(format ="iphylip")
         alg.write(format ="phylip")
 
-
-if __name__ == '__main__':
-    unittest.main()

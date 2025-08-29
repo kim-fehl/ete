@@ -143,6 +143,3 @@ class Test_ncbiquery(unittest.TestCase):
     self.assertIn(t2[6], {186802, 3085636})
     self.assertEqual(t2[7:], suffix)
 
-if __name__ == '__main__':
-  unittest.main()
-
