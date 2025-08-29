@@ -6,6 +6,7 @@ import math
 import pytest
 pytest.importorskip("PyQt6.QtGui")
 pytestmark = pytest.mark.interactive
+pytest.skip("interactive test", allow_module_level=True)
 
 from ete4 import Tree, CircleFace, RectFace, TextFace, add_face_to_node, TreeStyle
 

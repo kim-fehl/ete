@@ -7,10 +7,13 @@ from copy import deepcopy
 import os
 from pickle import load, dump
 import hashlib
+import pytest
 
-DATAPATH = os.path.abspath(os.path.split(os.path.realpath(__file__))[0])+"/ete_evol_data/"
+DATAPATH = os.path.abspath(os.path.split(os.path.realpath(__file__))[0]) + "/ete_evol_data/"
+WRKDIR = os.path.join(DATAPATH, "protamine", "PRM1")
+if not os.path.exists(os.path.join(WRKDIR, "tree.nw")):
+    pytest.skip("evolution test data not available", allow_module_level=True)
 
-WRKDIR = DATAPATH + '/protamine/PRM1/'
 BINDIR = os.getcwd() + '/bin/'
 print(BINDIR)
 
