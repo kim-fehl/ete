@@ -1,13 +1,15 @@
-"""
-Test to see if the ETE functions that Ana uses work correctly.
+"""Test to see if the ETE functions that Ana uses work correctly.
 
 To run with pytest.
 """
 
 import os
+import pytest
 
 from ete4 import PhyloTree, NCBITaxa, ETE_DATA_HOME, update_ete_data
 from ete4.ncbi_taxonomy import ncbiquery
+
+pytestmark = pytest.mark.skip(reason="requires external taxonomic data")
 
 DATABASE_PATH  = ETE_DATA_HOME + '/tests/test_ncbiquery.taxa.sqlite'
 P53_RAW_PATH   = ETE_DATA_HOME + '/tests/P53.faa.nw'
