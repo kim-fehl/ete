@@ -3,7 +3,7 @@ import multiprocessing
 
 CPUS = min(20, max(1, multiprocessing.cpu_count()-1))
 
-import unittest
+import pytest
 
 from ete4.tools import ete
 from ete4 import Tree, SeqGroup
@@ -21,7 +21,7 @@ def get_out_files(outdir, workflow, fasta):
     return clean_tree, extended_tree, alg_used, alg, alg_trimmed, img, cmd
 
 
-class Test_ete_build_manual_algs(unittest.TestCase):
+class Test_ete_build_manual_algs:
     def test_01_manual_alg(self):
         aligners = "none",
         trimmers = "none",
@@ -43,14 +43,14 @@ class Test_ete_build_manual_algs(unittest.TestCase):
                         t2 = Tree(xtree)
                         a1 = SeqGroup(alg_used)
                         a2 = SeqGroup(alg)
-                        self.assertEqual(t1.robinson_foulds(expected_tree)[:2], [0, 12])
-                        self.assertEqual(t2.robinson_foulds(expected_tree)[:2], [0, 12])
+                        assert t1.robinson_foulds(expected_tree)[:2] == [0, 12]
+                        assert t2.robinson_foulds(expected_tree)[:2] == [0, 12]
                         if _trimmer:
                             SeqGroup(alg_trimmed)
                         for name, seq, _ in a1:
-                            self.assertEqual(orig_alg.get_seq(name), seq)
+                            assert orig_alg.get_seq(name) == seq
                         for name, seq, _ in a2:
-                            self.assertEqual(orig_alg.get_seq(name), seq)
+                            assert orig_alg.get_seq(name) == seq
 
     def test_01_manual_alg_error(self):
         wkname = "none-none-none-fasttree_default"
@@ -58,10 +58,9 @@ class Test_ete_build_manual_algs(unittest.TestCase):
         expected_tree = Tree(expected_nw)
         cmd = 'ete3 build -a %s/P53.fa -w %s -o ete_test_tmp/etebuild_test3  -t0.3 --launch 0.5 --clearall --cpu %d' %(DIR, wkname, CPUS)
         args = cmd.split()
-        with self.assertRaises(SystemExit):
+        with pytest.raises(SystemExit):
             ete._main(args)
 
 
 
-if __name__ == "__main__":
-    unittest.main()
+

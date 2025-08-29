@@ -8,13 +8,13 @@ Tests related to the nexus module.
 #   http://hydrodictyon.eeb.uconn.edu/eebedia/index.php/Phylogenetics:_NEXUS_Format
 
 from tempfile import TemporaryFile
-import unittest
+import pytest
 
 from ete4 import Tree
 from ete4.parser import nexus
 
 
-class TestNexus(unittest.TestCase):
+class TestNexus:
 
     def test_loads(self):
         with TemporaryFile(mode='w+t') as fp:
@@ -52,7 +52,8 @@ END;
 
                 nexus.load(fp)
 
-            self.assertRaises(nexus.NexusError, read_bad_file)
+        with pytest.raises(nexus.NexusError):
+            read_bad_file()
 
 
     def test_get_trees(self):

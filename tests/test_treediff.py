@@ -1,4 +1,3 @@
-import unittest
 
 from ete4.core.tree import Tree
 from ete4.tools import ete_diff as ediff
@@ -17,7 +16,7 @@ def almost_equal(x, y, precision=1e-6):
     return abs(x - y) / max(abs(x), abs(y)) < precision
 
 
-class Test_Treediff(unittest.TestCase):
+class Test_Treediff:
     """Test specific methods for trees linked to treediff."""
 
     def test_treediff_basic(self):
@@ -30,10 +29,10 @@ class Test_Treediff(unittest.TestCase):
                                    reduce_matrix=False, extended=None,
                                    jobs=1, parallel=None)
 
-        self.assertEqual(type(difftable), list)
-        self.assertEqual(type(difftable[0]), list)
-        self.assertEqual(len(difftable[0]), 7)
-        self.assertEqual(len(difftable), 39)
+        assert isinstance(difftable, list)
+        assert isinstance(difftable[0], list)
+        assert len(difftable[0]) == 7
+        assert len(difftable) == 39
 
     def test_treediff_EUCL_DIST_1(self):
         """Test tree-diff EUCL_DIST distance."""
@@ -45,7 +44,7 @@ class Test_Treediff(unittest.TestCase):
                                    reduce_matrix=False, extended=None,
                                    jobs=1, parallel=None)
 
-        self.assertEqual(sum([i[0] for i in difftable]), 39)
+        assert sum(i[0] for i in difftable) == 39
 
     def test_treediff_EUCL_DIST_2(self):
         """ Tests tree-diff EUCL_DIST distance."""
@@ -57,7 +56,7 @@ class Test_Treediff(unittest.TestCase):
                                    reduce_matrix=False, extended=None,
                                    jobs=1, parallel=None)
 
-        self.assertTrue(almost_equal(sum([i[0] for i in difftable]), 19.621428))
+        assert almost_equal(sum(i[0] for i in difftable), 19.621428)
 
     def test_treediff_EUCL_DIST_3(self):
         """ Tests tree-diff EUCL_DIST diffs"""
@@ -69,7 +68,7 @@ class Test_Treediff(unittest.TestCase):
                                    reduce_matrix=False, extended=None,
                                    jobs=1, parallel=None)
 
-        self.assertEqual(sorted([i[4] for i in difftable]), DIFFS)
+        assert sorted(i[4] for i in difftable) == DIFFS
 
     def test_treediff_RF_DIST_1(self):
         """ Tests tree-diff RF_DIST distance"""
@@ -81,7 +80,7 @@ class Test_Treediff(unittest.TestCase):
                                    reduce_matrix=False, extended=None,
                                    jobs=1, parallel=None)
 
-        self.assertEqual(sum([i[0] for i in difftable]), 39.0)
+        assert sum(i[0] for i in difftable) == 39.0
 
     def test_treediff_RF_DIST_2(self):
         """ Tests tree-diff RF_DIST distance"""
@@ -93,7 +92,7 @@ class Test_Treediff(unittest.TestCase):
                                    reduce_matrix=False, extended=None,
                                    jobs=1, parallel=None)
 
-        self.assertEqual(sum([i[0] for i in difftable]), 10.0)
+        assert sum(i[0] for i in difftable) == 10.0
 
     def test_treediff_extendend_cc(self):
         """ Tests tree-diff Extended distance. Cophenetic Compared"""
@@ -106,7 +105,7 @@ class Test_Treediff(unittest.TestCase):
                                    extended=ediff.cc_distance,
                                    jobs=1, parallel=None)
 
-        self.assertEqual(sum([i[1] for i in difftable]), 863.9737020175473)
+        assert sum(i[1] for i in difftable) == 863.9737020175473
 
     def test_treediff_extendend_be(self):
         """ Tests tree-diff  Extended distance. Branch Extended"""
@@ -119,7 +118,7 @@ class Test_Treediff(unittest.TestCase):
                                    extended=ediff.be_distance,
                                    jobs=1, parallel=None)
 
-        self.assertEqual(sum([i[1] for i in difftable]), 616.0)
+        assert sum(i[1] for i in difftable) == 616.0
 
     def test_treediff_reports(self):
         """ Tests tree-diff Reports"""
@@ -188,5 +187,4 @@ DIFFS = [
      'ac', 'ad', 'ae', 'af', 'ah', 'ai', 'ak', 'am', 'aq', 'at'}]
 
 
-if __name__ == '__main__':
-    unittest.main()
+

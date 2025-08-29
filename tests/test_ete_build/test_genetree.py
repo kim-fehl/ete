@@ -3,7 +3,6 @@ import multiprocessing
 
 CPUS = min(20, max(1, multiprocessing.cpu_count()-1))
 
-import unittest
 
 from ete4.tools import ete
 from ete4 import Tree, SeqGroup
@@ -20,7 +19,7 @@ def get_out_files(outdir, workflow, fasta):
     cmd = "%s/%s/commands.log" %(outdir, workflow)
     return clean_tree, extended_tree, alg_used, alg, alg_trimmed, img, cmd
 
-class Test_ete_build_genetree(unittest.TestCase):
+class Test_ete_build_genetree:
     def test_01_aa_genetree_worflow(self):
         aligners = "muscle_default", "clustalo_default", "mafft_default"
         trimmers = "none", "trimal01"
@@ -32,5 +31,4 @@ class Test_ete_build_genetree(unittest.TestCase):
                     for _builder in builders:
                         pass
 
-if __name__ == "__main__":
-    unittest.main()
+
