@@ -23,12 +23,30 @@ jobs:
 
       - name: Install external executables
         run: |
-          conda install -y -c etetoolkit -c conda-forge gcc \
-            DIALIGN-TX_1.0.2 Duptree FastTree2 T-COFFEE_distribution_Version_11.00.8cbe486 \
-            argtable2-13 clustal-omega-1.2.1 consel iqtree-omp-1.4.2-Linux \
-            iqtree-omp-1.4.2-MacOSX kalign-2.03 mafft-6.861-without-extensions muscle3.8.31 \
-            paml4.8 phylobayes4.1c phyml-20120412-patched pmodeltest prank-100802 \
-            probcons-1.12 slr standard-RAxML-8.2.8 treebest trimal-1.4
+          conda config --add channels bioconda
+          conda config --add channels conda-forge
+          conda config --set channel_priority strict
+          conda install -y -c conda-forge mamba
+          mamba install -y -c bioconda dialign-tx=1.0.2
+          # DupTree is not available via conda or pip; build from source if needed
+          mamba install -y -c bioconda fasttree
+          mamba install -y -c bioconda t-coffee=11.00.8cbe486
+          mamba install -y -c conda-forge argtable2=2.13
+          mamba install -y -c bioconda clustalo=1.2.4
+          mamba install -y -c bioconda consel
+          mamba install -y -c bioconda iqtree=1.6.12
+          mamba install -y -c bioconda kalign2=2.04
+          mamba install -y -c bioconda mafft
+          mamba install -y -c bioconda muscle=3.8.1551
+          mamba install -y -c bioconda paml
+          mamba install -y -c bioconda phylobayes-mpi
+          mamba install -y -c bioconda phyml
+          mamba install -y -c etetoolkit pmodeltest
+          mamba install -y -c bioconda prank
+          mamba install -y -c bioconda probcons=1.12
+          mamba install -y -c bioconda raxml=8.2.13
+          mamba install -y -c bioconda treebest
+          mamba install -y -c bioconda trimal=1.5.0
         shell: bash -l {0}
 
       - name: Install dependencies
