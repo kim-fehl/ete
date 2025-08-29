@@ -22,7 +22,13 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install external executables
-        run: conda install -y -c etetoolkit -c conda-forge gcc ete3_external_apps
+        run: |
+          conda install -y -c etetoolkit -c conda-forge gcc \
+            DIALIGN-TX_1.0.2 Duptree FastTree2 T-COFFEE_distribution_Version_11.00.8cbe486 \
+            argtable2-13 clustal-omega-1.2.1 consel iqtree-omp-1.4.2-Linux \
+            iqtree-omp-1.4.2-MacOSX kalign-2.03 mafft-6.861-without-extensions muscle3.8.31 \
+            paml4.8 phylobayes4.1c phyml-20120412-patched pmodeltest prank-100802 \
+            probcons-1.12 slr standard-RAxML-8.2.8 treebest trimal-1.4
         shell: bash -l {0}
 
       - name: Install dependencies
