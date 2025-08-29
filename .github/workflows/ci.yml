@@ -46,7 +46,6 @@ jobs:
             raxml=8.2.13 \
             treebest \
             trimal=1.5.0 \
-            ete3_external_apps \
             gcc
           # DupTree is not available via conda or pip; build from source if needed
           # pmodeltest is Python 2 only and is omitted
