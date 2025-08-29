@@ -9,8 +9,8 @@ from ete4.core.tree import TreeError
 from ete4.parser.newick import NewickError
 from ete4.parser import newick
 
-from . import datasets as ds
-from .conftest import CUSTOM_FORMAT_CASES, QUOTED_NAME_CASES, COMPLEX_NAME
+from . import conftest as ds
+from .conftest import CUSTOM_FORMAT_CASES, QUOTED_NAME_CASES, COMPLEX_NAME, COPHENETIC_MATRIX_CASES, ROBINSON_FOULDS_CASES
 import pytest
 
 @pytest.fixture
@@ -1220,112 +1220,7 @@ def test_expand_polytomies_rf():
 #                      (1.0, 8, 8, 0.0, 0.0, 6, 1, "NA"))
 
 # TODO: Merge this function with the previous one? (test_tree_compare())
-def test_robinson_foulds_and_more(rng):
-    # this is the result of 100 Ktreedist runs on random trees, using rooted
-    # and unrooted topologies. ETE should provide the same RF result
-    samples = [
-    [28, True, '(((z,y),(x,(w,v))),(u,t),((s,r),((q,(p,o)),((n,(m,(l,(k,j)))),(i,(h,g))))));', '(((k,(j,(i,(h,g)))),z),(y,x),((w,v),((u,(t,(s,(r,q)))),(p,(o,(n,(m,l)))))));'],
-    [28, False, '(((t,s),((r,(q,p)),(o,n))),(((m,(l,(k,j))),(i,(h,g))),(z,(y,(x,(w,(v,u)))))));', '((((k,(j,i)),((h,g),z)),((y,(x,w)),((v,(u,t)),(s,(r,(q,p)))))),((o,n),(m,l)));'],
-    [18, True, '(((v,(u,(t,s))),((r,(q,(p,o))),((n,m),(l,k)))),(j,(i,(h,g))),(z,(y,(x,w))));', '(((z,(y,(x,w))),(v,(u,(t,s)))),((r,(q,p)),(o,(n,m))),((l,(k,(j,i))),(h,g)));'],
-    [26, True, '(((l,k),(j,i)),((h,g),(z,(y,(x,w)))),((v,(u,(t,(s,(r,q))))),((p,o),(n,m))));', '(((p,o),((n,(m,l)),(k,j))),((i,(h,g)),(z,y)),((x,(w,v)),((u,(t,s)),(r,q))));'],
-    [24, True, '(((o,(n,m)),(l,(k,(j,(i,(h,g)))))),(z,(y,x)),((w,v),((u,(t,(s,r))),(q,p))));', '(((t,(s,(r,(q,(p,o))))),(n,m)),((l,k),(j,(i,(h,g)))),((z,y),((x,w),(v,u))));'],
-    [24, True, '(((y,(x,(w,v))),(u,t)),((s,(r,(q,(p,o)))),(n,m)),((l,k),((j,(i,(h,g))),z)));', '(((z,(y,(x,w))),(v,(u,t))),(s,(r,(q,(p,(o,(n,(m,(l,k)))))))),(j,(i,(h,g))));'],
-    [28, False, '(((p,(o,(n,(m,l)))),((k,(j,i)),(h,g))),((z,y),((x,(w,(v,u))),(t,(s,(r,q))))));', '((((t,(s,r)),(q,p)),((o,n),(m,(l,(k,(j,i)))))),(((h,g),(z,(y,(x,w)))),(v,u)));'],
-    [28, True, '((((i,(h,g)),z),(y,x)),((w,v),((u,(t,(s,r))),(q,p))),((o,n),(m,(l,(k,j)))));', '((((h,g),z),(y,x)),(w,(v,u)),((t,s),((r,(q,p)),((o,(n,m)),(l,(k,(j,i)))))));'],
-    [28, True, '(((x,(w,(v,(u,(t,(s,(r,(q,(p,o))))))))),((n,(m,l)),(k,(j,i)))),(h,g),(z,y));', '(((u,t),(s,r)),((q,p),(o,(n,m))),(((l,(k,(j,i))),((h,g),(z,(y,x)))),(w,v)));'],
-    [22, False, '(((x,(w,(v,u))),((t,(s,r)),(q,p))),((o,(n,(m,l))),((k,j),((i,(h,g)),(z,y)))));', '(((z,(y,(x,(w,(v,u))))),(t,(s,r))),((q,(p,(o,(n,m)))),((l,k),(j,(i,(h,g))))));'],
-    [26, True, '((z,(y,(x,w))),(v,(u,(t,s))),((r,(q,(p,(o,(n,m))))),((l,k),(j,(i,(h,g))))));', '(((v,(u,t)),((s,r),((q,(p,o)),(n,(m,l))))),((k,j),((i,(h,g)),z)),(y,(x,w)));'],
-    [34, False, '((((i,(h,g)),(z,(y,x))),(w,v)),((u,t),((s,r),((q,(p,(o,n))),(m,(l,(k,j)))))));', '(((p,(o,(n,(m,(l,k))))),((j,i),(h,g))),(z,(y,(x,(w,(v,(u,(t,(s,(r,q))))))))));'],
-    [30, False, '(((i,(h,g)),(z,y)),((x,w),((v,(u,(t,(s,(r,q))))),(p,(o,(n,(m,(l,(k,j)))))))));', '((((l,k),(j,(i,(h,g)))),(z,(y,(x,w)))),((v,u),((t,s),((r,(q,p)),(o,(n,m))))));'],
-    [26, False, '(((v,(u,t)),((s,(r,q)),((p,o),((n,m),((l,k),(j,i)))))),((h,g),(z,(y,(x,w)))));', '(((y,(x,(w,v))),(u,(t,s))),(((r,q),((p,o),(n,(m,(l,k))))),((j,i),((h,g),z))));'],
-    [20, False, '(((u,(t,s)),(r,q)),(((p,o),((n,m),((l,k),((j,i),((h,g),z))))),(y,(x,(w,v)))));', '((((u,t),(s,r)),(((q,p),(o,(n,m))),(((l,k),(j,i)),((h,g),z)))),((y,x),(w,v)));'],
-    [20, True, '(((y,x),(w,v)),((u,(t,s)),((r,q),(p,(o,(n,(m,(l,k))))))),((j,(i,(h,g))),z));', '(((r,q),((p,o),(n,(m,(l,(k,j)))))),((i,(h,g)),(z,(y,(x,(w,v))))),(u,(t,s)));'],
-    [24, True, '((((k,(j,i)),(h,g)),((z,(y,(x,w))),((v,(u,t)),(s,r)))),(q,(p,(o,n))),(m,l));', '((((s,r),((q,p),(o,(n,m)))),((l,k),((j,i),((h,g),z)))),(y,x),(w,(v,(u,t))));'],
-    [18, True, '((w,(v,(u,(t,s)))),(r,q),((p,(o,n)),((m,(l,k)),((j,(i,(h,g))),(z,(y,x))))));', '(((y,x),((w,v),(u,(t,s)))),((r,(q,(p,(o,n)))),(m,l)),((k,j),((i,(h,g)),z)));'],
-    [26, True, '(((j,(i,(h,g))),(z,(y,(x,(w,(v,(u,t))))))),(s,r),((q,p),((o,(n,m)),(l,k))));', '(((s,(r,(q,(p,(o,(n,(m,l))))))),(k,j)),((i,(h,g)),(z,y)),((x,(w,v)),(u,t)));'],
-    [30, True, '((((r,(q,(p,(o,n)))),((m,l),(k,(j,i)))),((h,g),z)),(y,(x,(w,v))),(u,(t,s)));', '(((u,t),(s,r)),((q,p),(o,(n,(m,(l,(k,j)))))),(((i,(h,g)),(z,(y,x))),(w,v)));'],
-    [30, False, '((((m,(l,k)),(j,i)),(((h,g),(z,y)),(x,w))),((v,u),(t,(s,(r,(q,(p,(o,n))))))));', '(((u,t),((s,(r,q)),(p,(o,(n,(m,(l,k))))))),((j,(i,(h,g))),(z,(y,(x,(w,v))))));'],
-    [22, False, '(((k,(j,i)),(h,g)),((z,(y,x)),((w,(v,(u,(t,(s,r))))),((q,(p,(o,n))),(m,l)))));', '(((w,(v,u)),((t,(s,r)),((q,p),((o,(n,(m,l))),((k,(j,i)),((h,g),z)))))),(y,x));'],
-    [26, False, '(((x,(w,(v,(u,(t,s))))),(r,q)),((p,(o,(n,(m,l)))),((k,j),((i,(h,g)),(z,y)))));', '(((o,(n,m)),(l,(k,j))),(((i,(h,g)),(z,y)),((x,w),((v,u),((t,(s,r)),(q,p))))));'],
-    [28, True, '(((x,(w,v)),(u,(t,s))),((r,(q,(p,(o,(n,m))))),(l,(k,(j,(i,(h,g)))))),(z,y));', '((((i,(h,g)),(z,(y,x))),((w,v),((u,t),(s,(r,(q,p)))))),(o,n),((m,l),(k,j)));'],
-    [20, False, '((((m,l),(k,(j,(i,(h,g))))),(z,y)),((x,(w,(v,(u,(t,s))))),(r,(q,(p,(o,n))))));', '((((m,l),((k,(j,i)),(h,g))),(z,(y,(x,(w,v))))),((u,t),(s,(r,(q,(p,(o,n)))))));'],
-    [26, True, '(((o,(n,(m,(l,k)))),(j,i)),((h,g),(z,y)),((x,(w,(v,(u,(t,s))))),(r,(q,p))));', '((((t,(s,(r,(q,(p,(o,n)))))),(m,(l,k))),((j,i),(h,g))),(z,(y,x)),(w,(v,u)));'],
-    [22, False, '((((p,o),((n,m),((l,k),(j,i)))),((h,g),(z,y))),((x,(w,(v,u))),((t,s),(r,q))));', '((((v,(u,(t,s))),(r,q)),((p,o),((n,m),(l,k)))),(((j,i),(h,g)),(z,(y,(x,w)))));'],
-    [28, False, '((((r,(q,(p,(o,n)))),(m,(l,k))),(((j,i),(h,g)),((z,y),(x,w)))),((v,u),(t,s)));', '((((k,j),((i,(h,g)),(z,y))),(x,w)),(((v,(u,t)),(s,r)),((q,p),((o,n),(m,l)))));'],
-    [20, True, '((((q,(p,o)),(n,m)),((l,k),((j,i),(h,g)))),(z,(y,x)),((w,v),(u,(t,(s,r)))));', '((((l,(k,(j,i))),(h,g)),((z,y),(x,(w,v)))),(u,t),((s,(r,(q,(p,o)))),(n,m)));'],
-    [28, False, '(((t,(s,r)),(q,(p,o))),(((n,(m,(l,k))),(j,(i,(h,g)))),((z,y),(x,(w,(v,u))))));', '(((w,(v,u)),(t,s)),(((r,(q,p)),(o,n)),(((m,l),((k,j),((i,(h,g)),z))),(y,x))));'],
-    [24, True, '((((h,g),(z,y)),((x,(w,(v,u))),(t,(s,(r,q))))),(p,o),((n,m),((l,k),(j,i))));', '(((t,s),((r,(q,p)),((o,(n,(m,l))),((k,j),(i,(h,g)))))),(z,y),(x,(w,(v,u))));'],
-    [20, True, '(((p,o),(n,(m,(l,(k,(j,i)))))),((h,g),z),((y,(x,w)),((v,u),(t,(s,(r,q))))));', '(((y,(x,w)),(v,(u,t))),((s,r),(q,p)),((o,(n,m)),((l,(k,(j,i))),((h,g),z))));'],
-    [32, True, '((((s,(r,q)),((p,(o,n)),(m,(l,k)))),((j,(i,(h,g))),(z,y))),(x,w),(v,(u,t)));', '(((u,(t,(s,r))),((q,(p,o)),((n,(m,l)),(k,(j,i))))),((h,g),(z,(y,x))),(w,v));'],
-    [26, True, '(((z,(y,x)),(w,(v,(u,t)))),(s,(r,(q,(p,(o,n))))),((m,l),(k,(j,(i,(h,g))))));', '(((u,t),((s,r),((q,p),((o,n),((m,(l,k)),((j,i),((h,g),z))))))),(y,x),(w,v));'],
-    [10, True, '(((p,o),((n,m),((l,(k,(j,i))),((h,g),(z,y))))),(x,(w,(v,u))),((t,s),(r,q)));', '((((n,m),((l,(k,(j,i))),((h,g),(z,y)))),(x,w)),(v,(u,(t,(s,(r,q))))),(p,o));'],
-    [30, True, '((((h,g),z),((y,x),((w,v),(u,t)))),(s,r),((q,p),((o,n),((m,l),(k,(j,i))))));', '((((v,(u,(t,(s,r)))),(q,(p,o))),((n,m),((l,k),(j,(i,(h,g)))))),(z,y),(x,w));'],
-    [30, False, '(((q,(p,o)),((n,m),((l,(k,(j,(i,(h,g))))),(z,y)))),((x,(w,v)),(u,(t,(s,r)))));', '((((t,s),((r,q),((p,o),(n,m)))),((l,k),(j,i))),(((h,g),z),((y,(x,w)),(v,u))));'],
-    [24, False, '(((p,o),(n,m)),(((l,(k,(j,i))),(h,g)),((z,y),((x,w),((v,u),(t,(s,(r,q))))))));', '((x,(w,v)),((u,(t,(s,(r,q)))),((p,(o,(n,(m,(l,(k,(j,(i,(h,g))))))))),(z,y))));'],
-    [28, False, '(((z,y),((x,w),((v,u),(t,s)))),((r,(q,(p,(o,(n,m))))),((l,k),((j,i),(h,g)))));', '((((s,(r,q)),((p,o),((n,(m,l)),(k,(j,(i,(h,g))))))),(z,y)),((x,w),(v,(u,t))));'],
-    [24, False, '((((o,n),((m,l),((k,(j,i)),(h,g)))),(z,(y,x))),((w,(v,(u,(t,(s,r))))),(q,p)));', '(((q,(p,(o,(n,m)))),((l,(k,j)),(i,(h,g)))),(z,(y,(x,(w,(v,(u,(t,(s,r)))))))));'],
-    [22, True, '(((p,(o,(n,m))),((l,k),((j,i),((h,g),(z,y))))),(x,w),((v,u),((t,s),(r,q))));', '(((u,(t,(s,(r,(q,(p,(o,(n,m)))))))),((l,k),((j,i),((h,g),(z,(y,x)))))),w,v);'],
-    [28, False, '((((r,q),((p,o),(n,(m,l)))),((k,(j,i)),(h,g))),((z,y),((x,(w,v)),(u,(t,s)))));', '(((h,g),z),((y,x),((w,v),((u,t),((s,(r,(q,(p,(o,(n,m)))))),(l,(k,(j,i))))))));'],
-    [30, True, '((((h,g),z),((y,(x,(w,(v,u)))),((t,s),((r,(q,(p,o))),(n,m))))),(l,k),(j,i));', '((((o,n),((m,(l,(k,j))),((i,(h,g)),z))),(y,(x,(w,v)))),(u,(t,s)),(r,(q,p)));'],
-    [30, True, '(((v,u),(t,(s,(r,(q,p))))),((o,(n,m)),((l,(k,j)),((i,(h,g)),z))),(y,(x,w)));', '((((m,(l,k)),((j,i),(h,g))),(z,y)),(x,w),((v,(u,(t,(s,(r,q))))),(p,(o,n))));'],
-    [26, True, '(((q,p),((o,(n,(m,l))),(k,(j,i)))),((h,g),z),((y,x),((w,(v,(u,t))),(s,r))));', '((((j,(i,(h,g))),(z,(y,x))),((w,v),(u,t))),(s,(r,q)),((p,o),(n,(m,(l,k)))));'],
-    [20, False, '((((o,(n,m)),((l,k),((j,i),((h,g),z)))),(y,x)),(((w,v),(u,t)),((s,r),(q,p))));', '((((j,i),((h,g),z)),((y,x),(w,(v,(u,(t,(s,r))))))),((q,p),((o,n),(m,(l,k)))));'],
-    [30, False, '(((x,w),(v,(u,(t,(s,(r,(q,(p,(o,(n,m)))))))))),((l,k),((j,(i,(h,g))),(z,y))));', '(((m,l),((k,(j,(i,(h,g)))),z)),((y,(x,(w,(v,(u,t))))),((s,r),((q,p),(o,n)))));'],
-    [32, True, '((((y,x),(w,v)),((u,(t,(s,r))),(q,(p,o)))),((n,m),(l,(k,j))),((i,(h,g)),z));', '(((m,l),(k,(j,i))),((h,g),z),((y,(x,w)),((v,u),((t,s),(r,(q,(p,(o,n))))))));'],
-    [28, True, '(((v,u),((t,(s,(r,(q,p)))),((o,n),((m,l),(k,(j,(i,(h,g)))))))),(z,y),(x,w));', '((((n,m),((l,k),((j,i),((h,g),(z,(y,(x,(w,(v,u))))))))),(t,s)),(r,q),(p,o));'],
-    [32, False, '(((r,(q,p)),(o,n)),(((m,(l,k)),(j,i)),(((h,g),(z,y)),((x,w),((v,u),(t,s))))));', '(((y,x),((w,v),(u,(t,(s,r))))),(((q,(p,(o,n))),(m,l)),((k,(j,(i,(h,g)))),z)));'],
-    [20, True, '(((w,v),((u,(t,(s,r))),((q,p),((o,(n,(m,l))),((k,j),((i,(h,g)),z)))))),y,x);', '(((w,v),((u,t),(s,(r,q)))),((p,o),((n,(m,l)),(k,j))),((i,(h,g)),(z,(y,x))));'],
-    [24, False, '(((x,(w,v)),((u,(t,s)),(r,q))),(((p,o),((n,(m,l)),(k,j))),((i,(h,g)),(z,y))));', '((((i,(h,g)),z),((y,x),(w,v))),((u,(t,s)),((r,(q,(p,(o,(n,m))))),(l,(k,j)))));'],
-    [22, False, '((((k,(j,(i,(h,g)))),(z,(y,x))),((w,v),(u,t))),((s,(r,(q,(p,o)))),(n,(m,l))));', '(((w,v),(u,(t,(s,(r,(q,(p,o))))))),(((n,m),((l,(k,(j,i))),((h,g),z))),(y,x)));'],
-    [28, True, '(((x,w),((v,u),((t,s),(r,(q,p))))),((o,n),(m,l)),((k,(j,i)),((h,g),(z,y))));', '((((p,o),(n,m)),((l,(k,(j,i))),((h,g),z))),(y,(x,(w,v))),((u,t),(s,(r,q))));'],
-    [30, False, '(((q,p),((o,(n,(m,l))),((k,(j,(i,(h,g)))),z))),((y,x),((w,(v,u)),(t,(s,r)))));', '((((m,(l,k)),((j,(i,(h,g))),z)),(y,(x,w))),((v,(u,(t,(s,(r,q))))),(p,(o,n))));'],
-    [30, False, '(((y,x),((w,(v,(u,(t,(s,r))))),(q,p))),((o,(n,(m,(l,(k,(j,i)))))),((h,g),z)));', '((((t,(s,(r,q))),((p,(o,(n,(m,l)))),((k,(j,i)),(h,g)))),(z,y)),((x,w),(v,u)));'],
-    [20, False, '(((u,(t,s)),(r,(q,(p,(o,(n,(m,(l,(k,j))))))))),(((i,(h,g)),z),(y,(x,(w,v)))));', '(((o,n),(m,(l,(k,j)))),(((i,(h,g)),(z,y)),((x,(w,v)),((u,(t,(s,r))),(q,p)))));'],
-    [26, False, '(((t,s),((r,(q,(p,(o,n)))),(m,(l,k)))),(((j,i),((h,g),z)),((y,(x,w)),(v,u))));', '(((r,(q,(p,o))),((n,(m,(l,k))),((j,i),(h,g)))),((z,(y,(x,(w,v)))),(u,(t,s))));'],
-    [28, True, '((((r,q),((p,(o,(n,(m,l)))),((k,(j,i)),(h,g)))),(z,(y,(x,w)))),(v,u),(t,s));', '(((x,(w,(v,(u,(t,s))))),(r,(q,(p,o)))),(n,m),((l,k),((j,(i,(h,g))),(z,y))));'],
-    [28, False, '(((t,s),((r,(q,p)),((o,n),(m,(l,(k,(j,i))))))),(((h,g),(z,y)),(x,(w,(v,u)))));', '((((h,g),(z,(y,(x,(w,v))))),(u,(t,(s,r)))),((q,(p,(o,(n,m)))),(l,(k,(j,i)))));'],
-    [26, True, '((((q,(p,o)),((n,m),((l,(k,(j,i))),(h,g)))),(z,(y,x))),(w,v),(u,(t,(s,r))));', '(((y,x),(w,(v,u))),((t,(s,r)),((q,p),(o,n))),((m,(l,k)),((j,(i,(h,g))),z)));'],
-    [28, False, '((((q,(p,(o,n))),((m,(l,k)),((j,(i,(h,g))),z))),(y,x)),((w,(v,(u,t))),(s,r)));', '(((z,(y,x)),(w,v)),(((u,t),((s,(r,(q,p))),((o,n),(m,l)))),((k,(j,i)),(h,g))));'],
-    [22, True, '(((x,w),((v,(u,(t,s))),(r,q))),((p,(o,n)),((m,(l,k)),(j,(i,(h,g))))),(z,y));', '((((j,(i,(h,g))),(z,(y,x))),(w,(v,u))),((t,s),((r,q),(p,o))),((n,m),(l,k)));'],
-    [26, False, '((((n,(m,l)),(k,j)),(((i,(h,g)),(z,y)),((x,w),((v,u),(t,s))))),((r,q),(p,o)));', '(((v,u),(t,s)),(((r,(q,(p,(o,n)))),((m,(l,k)),(j,i))),((h,g),(z,(y,(x,w))))));'],
-    [32, False, '((((n,(m,(l,(k,j)))),((i,(h,g)),z)),(y,x)),((w,v),((u,(t,(s,r))),(q,(p,o)))));', '((((v,u),(t,(s,(r,(q,p))))),((o,(n,(m,(l,k)))),(j,(i,(h,g))))),((z,y),(x,w)));'],
-    [20, False, '((((q,(p,(o,n))),(m,l)),((k,(j,(i,(h,g)))),z)),((y,(x,(w,(v,(u,t))))),(s,r)));', '(((w,(v,(u,t))),(s,r)),(((q,p),(o,n)),(((m,l),(k,(j,i))),((h,g),(z,(y,x))))));'],
-    [20, True, '(((z,(y,(x,w))),(v,u)),((t,(s,r)),(q,(p,o))),((n,(m,l)),((k,(j,i)),(h,g))));', '((((q,(p,(o,n))),(m,l)),((k,j),(i,(h,g)))),(z,y),((x,w),((v,u),(t,(s,r)))));'],
-    [34, False, '(((w,(v,(u,(t,(s,(r,q)))))),(p,o)),(((n,m),(l,(k,j))),((i,(h,g)),(z,(y,x)))));', '(((y,(x,(w,(v,u)))),(t,(s,r))),(((q,(p,(o,(n,(m,(l,k)))))),(j,i)),((h,g),z)));'],
-    [26, False, '(((y,x),(w,(v,(u,t)))),(((s,r),((q,(p,o)),(n,(m,l)))),((k,(j,(i,(h,g)))),z)));', '(((s,(r,(q,(p,o)))),(n,m)),(((l,k),((j,i),((h,g),(z,(y,(x,w)))))),(v,(u,t))));'],
-    [30, False, '(((v,(u,t)),((s,r),((q,p),((o,(n,(m,(l,k)))),(j,i))))),(((h,g),z),(y,(x,w))));', '(((y,(x,(w,v))),((u,(t,s)),(r,(q,(p,o))))),((n,(m,l)),((k,(j,i)),((h,g),z))));'],
-    [26, False, '(((y,x),(w,v)),(((u,t),((s,(r,(q,p))),(o,n))),((m,(l,k)),((j,i),((h,g),z)))));', '((((s,(r,q)),((p,(o,n)),((m,l),(k,(j,i))))),((h,g),z)),((y,(x,w)),(v,(u,t))));'],
-    [22, True, '(((w,v),(u,t)),((s,r),((q,p),((o,(n,m)),((l,k),((j,i),(h,g)))))),(z,(y,x)));', '(((z,y),(x,(w,(v,u)))),(t,(s,r)),((q,(p,o)),((n,m),((l,(k,(j,i))),(h,g)))));'],
-    [28, False, '(((y,x),(w,(v,(u,t)))),(((s,(r,q)),((p,o),(n,(m,(l,k))))),((j,i),((h,g),z))));', '((((i,(h,g)),(z,(y,x))),((w,(v,u)),(t,s))),((r,q),((p,o),((n,m),(l,(k,j))))));'],
-    [26, False, '(((v,(u,(t,s))),(r,(q,p))),(((o,n),((m,(l,(k,j))),((i,(h,g)),(z,y)))),(x,w)));', '(((q,p),((o,n),((m,l),((k,j),((i,(h,g)),z))))),(y,(x,(w,(v,(u,(t,(s,r))))))));'],
-    [26, True, '(((t,(s,(r,q))),((p,o),((n,(m,l)),((k,j),((i,(h,g)),z))))),(y,x),(w,(v,u)));', '(((z,y),(x,w)),(v,u),((t,(s,r)),((q,(p,(o,(n,(m,l))))),((k,(j,i)),(h,g)))));'],
-    [30, True, '(((w,(v,(u,(t,(s,r))))),(q,p)),((o,(n,m)),((l,k),(j,i))),(((h,g),z),(y,x)));', '((((p,o),(n,(m,(l,(k,(j,(i,(h,g)))))))),(z,(y,x))),(w,(v,u)),((t,s),(r,q)));'],
-    [26, True, '((((i,(h,g)),(z,y)),(x,w)),((v,u),((t,(s,r)),(q,p))),((o,n),(m,(l,(k,j)))));', '(((l,k),((j,i),((h,g),(z,y)))),(x,w),((v,u),((t,s),((r,(q,(p,o))),(n,m)))));'],
-    [26, False, '(((x,w),((v,(u,(t,s))),((r,(q,p)),((o,(n,(m,(l,k)))),((j,i),(h,g)))))),(z,y));', '(((p,(o,(n,m))),(l,k)),(((j,i),(h,g)),((z,y),((x,(w,v)),((u,t),(s,(r,q)))))));'],
-    [24, True, '(((x,w),((v,(u,t)),(s,r))),((q,p),(o,(n,(m,(l,k))))),((j,i),((h,g),(z,y))));', '(((h,g),(z,y)),(x,(w,(v,u))),((t,(s,r)),(q,(p,(o,(n,(m,(l,(k,(j,i))))))))));'],
-    [24, True, '(((y,x),(w,v)),((u,t),((s,r),((q,p),((o,n),(m,(l,k)))))),((j,(i,(h,g))),z));', '((((r,(q,p)),(o,(n,(m,(l,(k,(j,(i,(h,g))))))))),(z,y)),(x,(w,v)),(u,(t,s)));'],
-    [28, False, '(((y,(x,(w,v))),((u,t),((s,(r,q)),((p,(o,n)),((m,l),(k,(j,i))))))),((h,g),z));', '(((v,u),(t,(s,(r,(q,(p,(o,n))))))),(((m,l),((k,j),((i,(h,g)),z))),(y,(x,w))));'],
-    [26, True, '((((h,g),z),((y,x),((w,(v,u)),((t,(s,(r,q))),(p,(o,n)))))),(m,(l,k)),(j,i));', '((z,y),(x,(w,(v,(u,t)))),((s,r),((q,p),((o,n),((m,(l,k)),(j,(i,(h,g))))))));'],
-    [24, True, '(((u,t),(s,r)),((q,p),((o,n),((m,(l,(k,(j,(i,(h,g)))))),z))),(y,(x,(w,v))));', '((((j,(i,(h,g))),z),(y,x)),(w,(v,(u,t))),((s,(r,(q,p))),((o,(n,m)),(l,k))));'],
-    [30, True, '(((t,(s,r)),((q,p),((o,n),(m,(l,(k,j)))))),((i,(h,g)),z),((y,x),(w,(v,u))));', '((((w,(v,(u,t))),(s,(r,q))),((p,(o,(n,m))),(l,k))),((j,i),(h,g)),(z,(y,x)));'],
-    [30, False, '((((x,(w,v)),(u,t)),((s,(r,q)),(p,o))),(((n,m),((l,k),((j,i),(h,g)))),(z,y)));', '((r,q),((p,(o,n)),((m,(l,(k,(j,i)))),((h,g),(z,(y,(x,(w,(v,(u,(t,s)))))))))));'],
-    [28, True, '((((k,j),((i,(h,g)),(z,(y,x)))),(w,v)),(u,t),((s,(r,q)),(p,(o,(n,(m,l))))));', '(((z,y),(x,w)),(v,(u,(t,(s,(r,q))))),((p,o),((n,(m,(l,(k,(j,i))))),(h,g))));'],
-    [18, True, '(((t,s),((r,(q,(p,o))),(n,m))),((l,(k,j)),((i,(h,g)),(z,y))),((x,w),(v,u)));', '((((l,k),(j,i)),(((h,g),(z,y)),(x,w))),((v,u),(t,s)),((r,q),((p,o),(n,m))));'],
-    [26, True, '(((h,g),z),(y,(x,w)),((v,(u,(t,s))),((r,(q,p)),((o,(n,(m,l))),(k,(j,i))))));', '(((s,r),(q,p)),((o,n),(m,l)),(((k,j),((i,(h,g)),(z,(y,x)))),(w,(v,(u,t)))));'],
-    [30, True, '(((x,w),((v,(u,(t,(s,(r,(q,(p,(o,n)))))))),((m,(l,k)),((j,i),(h,g))))),z,y);', '((((h,g),z),(y,x)),((w,v),((u,(t,s)),(r,q))),((p,(o,(n,(m,l)))),(k,(j,i))));'],
-    [30, False, '(((v,(u,(t,(s,(r,q))))),((p,(o,(n,m))),((l,(k,(j,i))),(h,g)))),((z,y),(x,w)));', '(((v,u),((t,(s,(r,(q,(p,o))))),(n,(m,(l,(k,j)))))),((i,(h,g)),(z,(y,(x,w)))));'],
-    [22, True, '(((z,y),((x,(w,v)),((u,(t,(s,r))),(q,(p,o))))),(n,m),((l,k),(j,(i,(h,g)))));', '(((r,q),(p,(o,(n,m)))),((l,(k,(j,(i,(h,g))))),(z,y)),((x,w),(v,(u,(t,s)))));'],
-    [30, True, '(((x,w),((v,(u,(t,(s,r)))),(q,p))),((o,n),(m,l)),((k,j),((i,(h,g)),(z,y))));', '((((p,o),((n,(m,(l,k))),((j,i),(h,g)))),((z,y),(x,(w,v)))),(u,t),(s,(r,q)));'],
-    [32, False, '(((r,(q,p)),(o,(n,m))),(((l,(k,(j,i))),(h,g)),((z,(y,(x,(w,(v,u))))),(t,s))));', '((((j,(i,(h,g))),(z,y)),(x,(w,(v,(u,t))))),(((s,r),(q,(p,o))),((n,m),(l,k))));'],
-    [30, False, '((((q,p),((o,(n,(m,(l,k)))),((j,(i,(h,g))),(z,y)))),(x,w)),((v,u),(t,(s,r))));', '((((o,(n,m)),((l,(k,(j,i))),((h,g),z))),(y,x)),((w,v),((u,t),((s,r),(q,p)))));'],
-    [28, False, '((((s,r),((q,(p,o)),(n,(m,l)))),((k,(j,i)),(h,g))),((z,(y,x)),(w,(v,(u,t)))));', '(((m,l),(k,j)),(((i,(h,g)),z),((y,x),((w,(v,(u,(t,(s,r))))),((q,p),(o,n))))));'],
-    [20, True, '((((z,y),(x,(w,(v,u)))),((t,s),(r,q))),((p,o),(n,(m,l))),((k,(j,i)),(h,g)));', '(((j,i),(h,g)),(z,(y,x)),((w,(v,u)),((t,(s,(r,q))),((p,o),((n,m),(l,k))))));'],
-    [20, False, '(((v,u),((t,s),(r,q))),(((p,o),(n,(m,l))),(((k,(j,i)),((h,g),z)),(y,(x,w)))));', '((((s,(r,q)),(p,o)),(((n,(m,l)),(k,(j,i))),((h,g),z))),((y,x),((w,v),(u,t))));'],
-    [28, True, '((z,y),(x,w),((v,u),((t,(s,(r,q))),((p,(o,(n,m))),(l,(k,(j,(i,(h,g)))))))));', '((((r,q),((p,o),((n,m),((l,k),(j,i))))),((h,g),(z,(y,x)))),(w,v),(u,(t,s)));'],
-    [24, False, '((((k,(j,(i,(h,g)))),(z,y)),(x,(w,v))),(((u,t),(s,(r,q))),((p,o),(n,(m,l)))));', '(((w,v),(u,(t,s))),(((r,(q,(p,o))),((n,m),(l,(k,(j,(i,(h,g))))))),(z,(y,x))));'],
-    [24, True, '((((n,m),((l,(k,j)),(i,(h,g)))),(z,y)),(x,(w,v)),((u,(t,(s,(r,q)))),(p,o)));', '(((r,q),(p,o)),((n,(m,l)),((k,j),((i,(h,g)),z))),((y,x),(w,(v,(u,(t,s))))));']]
-
-    # test RF exceptions
+def test_robinson_foulds_exceptions():
     t1 = Tree('(a,b,(c,d,e));')
     t2 = Tree('((a,b),(c,d,e));')
     # testing unrooted trees
@@ -1361,137 +1256,28 @@ def test_robinson_foulds_and_more(rng):
         t2.robinson_foulds(t2=t3)
 
 
+@pytest.mark.parametrize("RF, unrooted, nw1, nw2", ROBINSON_FOULDS_CASES)
+def test_robinson_foulds_and_more(rng, RF, unrooted, nw1, nw2):
+    t1 = Tree(nw1)
+    t2 = Tree(nw2)
+    rf, rf_max, names, r1, r2, d1, d2 = t1.robinson_foulds(t2, unrooted_trees=unrooted)
+    real_max = (20*2) - 4 if not unrooted else (20*2) - 6
 
-    # test RF using a knonw set of results
-    for RF, unrooted, nw1, nw2 in samples:
-        t1 = Tree(nw1)
-        t2 = Tree(nw2)
-        rf, rf_max, names, r1, r2, d1, d2 = t1.robinson_foulds(t2, unrooted_trees=unrooted)
-        real_max = (20*2) - 4 if not unrooted else (20*2) - 6
+    assert len(names) == 20
+    assert rf_max == real_max
+    assert rf == RF
 
-        assert len(names) == 20
-        assert rf_max == real_max
-        assert rf == RF
-
-        comp = t1.compare(t2, unrooted=unrooted)
-        assert 20 == comp['effective_tree_size']
-        assert rf_max == comp['max_rf']
-        assert RF == comp['rf']
-        # Let's insert some random nodes, that should be ignored
-        for target in rng.sample([n for n in t2.descendants() if not n.is_leaf], 5):
-            target.populate(5, dist_fn=rng.random, support_fn=rng.random)
-        comp = t1.compare(t2, unrooted=unrooted)
-        assert 20 == comp['effective_tree_size']
-        assert rf_max == comp['max_rf']
-        assert RF == comp['rf']
-
-    # test treeko functionality
-    t = PhyloTree('((((A,B),C), ((A,B),C)), (((A,B),C), ((A,B),C)));')
-    ref = Tree('((A,B),C);')
-    comp = t.compare(ref, has_duplications=True)
-
-    assert comp['effective_tree_size'] == 3
-    assert comp['treeko_dist'] == 0.0
-    assert comp['norm_rf'] == 0.0
-    assert comp['rf'] == 0.0
-    assert comp['max_rf'] == 2
-    assert comp['source_subtrees'] == 4
-
-    # test polytomy corrections
-
-    ref2 = Tree("((a:1, (b:1, c:1, d:1):1):1, (e:1, f:1, g:1):1);")
-    gtree = Tree("((a:1, (b:1, (c:1, d:1):1):1), (e:1, (f:1, g:1):1):1);")
-
-    # Basic polytomy
-    rf, max_rf, names, r1, r2, d1, d2 = gtree.robinson_foulds(ref2)
-    assert rf == 2
-    rf, max_rf, names, r1, r2, d1, d2 = gtree.robinson_foulds(ref2, expand_polytomies=True)
-    assert rf == 0
-
-
-    # nested polytomies
-    gtree = Tree('((g, h), (a, (b, (c, (d,( e, f))))));')
-    ref3 = Tree('((a, b, c, (d, e, f)), (g, h));')
-    ref4 = Tree('((a, b, c, d, e, f), (g, h));')
-    ref5 = Tree('((a, b, (c, d, (e, f))), (g, h));')
-
-    rf, max_rf, names, r1, r2, d1, d2 = gtree.robinson_foulds(ref3)
-    assert rf == 3
-    rf, max_rf, names, r1, r2, d1, d2 = gtree.robinson_foulds(ref3, expand_polytomies=True)
-    assert rf == 0
-
-    rf, max_rf, names, r1, r2, d1, d2 = gtree.robinson_foulds(ref4)
-    assert rf == 4
-    rf, max_rf, names, r1, r2, d1, d2 = gtree.robinson_foulds(ref4, expand_polytomies=True,
-                                                              polytomy_size_limit=6)
-    assert rf == 0
-
-    rf, max_rf, names, r1, r2, d1, d2 = gtree.robinson_foulds(ref5)
-    assert rf == 2
-    rf, max_rf, names, r1, r2, d1, d2 = gtree.robinson_foulds(ref5, expand_polytomies=True)
-    assert rf == 0
-
-    # two side polytomies
-    t1 = Tree("((a:1, (b:1, c:1, d:1):1):1, (e:1, f:1, g:1):1);")
-    t2 = Tree("((a:1, (b:1, c:1, d:1):1), (e:1, (f:1, g:1):1):1);")
-    rf, max_rf, names, r1, r2, d1, d2 = t1.robinson_foulds(t2, expand_polytomies=True)
-    assert rf == 0
-
-
-    # test auto pruned tree topology
-    for RF, unrooted, nw1, nw2 in samples:
-        # Add fake tips in the newick
-        for x in "clanger":
-            nw1 = nw1.replace(x, "(%s,%s1)" %(x, x) )
-            nw2 = nw2.replace(x, "(%s,%s2)" %(x, x) )
-        t1 = Tree(nw1)
-        t2 = Tree(nw2)
-        rf, rf_max, names, r1, r2, d1, d2 = t1.robinson_foulds(t2, unrooted_trees=unrooted)
-        assert len(names) == 20
-        real_max = (20*2) - 4 if not unrooted else (20*2) - 6
-        assert rf_max == real_max
-        assert rf == RF
-
-    # TODO: Fix the tests from this line to the end of this function.
-    # # Testing RF with branch support thresholds.
-    # # test discarding lowly supported branches
-    # for RF, unrooted, nw1, nw2 in samples:
-    #     # Add fake internal nodes with low support
-    #     for x in "jlnqr":
-    #         nw1 = nw1.replace(x, "(%s,(%s1, %s11)0.6)" %(x, x, x) )
-    #         nw2 = nw2.replace(x, "(%s,(%s1, %s11)0.5)" %(x, x, x) )
-    #     t1 = Tree(nw1, parser=0)
-    #     t2 = Tree(nw2, parser=0)
-    #     rf, rf_max, names, r1, r2, d1, d2 = t1.robinson_foulds(t2, unrooted_trees=unrooted,
-    #                                                            min_support_t1 = 0.1, min_support_t2 = 0.1)
-    #     self.assertEqual(len(names), 30)
-    #     real_max = (30*2) - 4 if not unrooted else (30*2) - 6
-    #     self.assertEqual(rf_max, real_max)
-    #     self.assertEqual(rf, RF)
-
-    #     rf, rf_max, names, r1, r2, d1, d2 = t1.robinson_foulds(t2, unrooted_trees=unrooted,
-    #                                                            min_support_t1 = 0.0, min_support_t2 = 0.51)
-    #     self.assertEqual(len(names), 30)
-    #     real_max = (30*2) - 4 - 5 if not unrooted else (30*2) - 6 -5 # -5 to discount low support branches
-    #     self.assertEqual(rf_max, real_max)
-    #     self.assertEqual(rf, RF)
-
-    #     rf, rf_max, names, r1, r2, d1, d2 = t1.robinson_foulds(t2, unrooted_trees=unrooted,
-    #                                                            min_support_t1 = 0.61, min_support_t2 = 0.0)
-    #     self.assertEqual(len(names), 30)
-    #     real_max = (30*2) - 4 - 5 if not unrooted else (30*2) - 6 -5 # -5 to discount low support branches
-    #     self.assertEqual(rf_max, real_max)
-    #     self.assertEqual(rf, RF)
-
-
-    #     rf, rf_max, names, r1, r2, d1, d2 = t1.robinson_foulds(t2, unrooted_trees=unrooted,
-    #                                                            min_support_t1 = 0.61, min_support_t2 = 0.51)
-    #     self.assertEqual(len(names), 30)
-    #     real_max = (30*2) - 4 - 10 if not unrooted else (30*2) - 6 -10 # -10 to discount low support branches
-    #     self.assertEqual(rf_max, real_max)
-    #     self.assertEqual(rf, RF)
-
-# TODO: Fix the check_monophyly() function and this test.
+    comp = t1.compare(t2, unrooted=unrooted)
+    assert 20 == comp['effective_tree_size']
+    assert rf_max == comp['max_rf']
+    assert RF == comp['rf']
+    # Let's insert some random nodes, that should be ignored
+    for target in rng.sample([n for n in t2.descendants() if not n.is_leaf], 5):
+        target.populate(5, dist_fn=rng.random, support_fn=rng.random)
+    comp = t1.compare(t2, unrooted=unrooted)
+    assert 20 == comp['effective_tree_size']
+    assert rf_max == comp['max_rf']
+    assert RF == comp['rf']
 def test_monophyly():
     """Checks for monophyletic, paraphyletic, and polyphyletic groups."""
     t = Tree("((((((a, e), i), o),h), u), ((f, g), j));")
@@ -1632,58 +1418,11 @@ def test_copy():
     assert (t_pkl["A"]).props['complex'][0] == [0,1]
     assert (t_deep["A"]).props['testfn']() == "YES"
 
-def test_cophenetic_matrix():
-    t = Tree(ds.nw_full)
+@pytest.mark.parametrize("newick, expected_dists, expected_leaves", COPHENETIC_MATRIX_CASES)
+def test_cophenetic_matrix(newick, expected_dists, expected_leaves):
+    t = Tree(newick)
     dists, leaves = t.cophenetic_matrix()
-    actualdists = [
-        [0, 2.6926, 3.527812, 2.722929, 2.506113, 2.446778, 2.446778, 2.45498, 2.671453, 2.3582, 2.3582,
-         2.417238, 2.426221, 2.4275260, 2.373247, 2.38897, 2.391652, 2.426698, 2.412043, 2.403944],
-        [2.6926, 0, 3.305472, 2.500589, 2.283773, 2.224438, 2.224438, 2.23264, 2.449113, 2.13586, 2.13586,
-         2.1948980, 2.203881, 2.2051860, 2.150907, 2.16663, 2.169312, 2.204358, 2.189703, 2.181604],
-        [3.527812, 3.305472, 0, 2.700237, 2.483421, 2.424086, 2.424086, 2.432288, 2.648761, 2.335508, 2.335508,
-         2.394546, 2.403529, 2.404834, 2.350555, 2.366278, 2.36896, 2.404006, 2.389351, 2.381252],
-        [2.722929, 2.500589, 2.700237, 0, 1.239604, 1.180269, 1.180269, 1.188471, 1.404944, 1.091691, 1.091691,
-         1.1507290, 1.159712, 1.161017, 1.106738, 1.122461, 1.125143, 1.160189, 1.145534, 1.137435],
-        [2.506113, 2.283773, 2.483421, 1.239604, 0, 0.309633, 0.309633, 0.3178350, 0.8193680, 0.5061150, 0.5061150,
-         0.565153, 0.574136, 0.5754410, 0.521162, 0.5368850, 0.539567, 0.574613, 0.559958, 0.5518590],
-        [2.446778, 2.224438, 2.424086, 1.180269, 0.309633, 0, 0.0, 0.01366, 0.760033, 0.44678, 0.44678,
-         0.505818, 0.5148010, 0.516106, 0.461827, 0.47755, 0.480232, 0.515278, 0.500623, 0.492524],
-        [2.446778, 2.224438, 2.424086, 1.180269, 0.309633, 0.0, 0, 0.01366, 0.760033, 0.44678, 0.44678,
-         0.505818, 0.5148010, 0.516106, 0.461827, 0.47755, 0.480232, 0.515278, 0.500623, 0.492524],
-        [2.45498, 2.23264, 2.432288, 1.188471, 0.3178350, 0.01366, 0.01366, 0, 0.768235, 0.454982, 0.454982,
-         0.51401, 0.523003, 0.524308, 0.470029, 0.485751, 0.488434, 0.52348, 0.508825, 0.500726],
-        [2.671453, 2.449113, 2.648761, 1.404944, 0.8193680, 0.760033, 0.760033, 0.768235, 0, 0.531709, 0.531709,
-         0.6617230, 0.670706, 0.672011, 0.6177320, 0.633455, 0.6361370, 0.6711830, 0.656528, 0.648429],
-        [2.3582, 2.13586, 2.335508, 1.091691, 0.5061150, 0.44678, 0.44678, 0.454982, 0.531709, 0, 0.0,
-         0.348470, 0.357453, 0.358758, 0.3044790, 0.320202, 0.3228840, 0.35793, 0.343275, 0.3351760],
-        [2.3582, 2.13586, 2.335508, 1.091691, 0.5061150, 0.44678, 0.44678, 0.454982, 0.531709, 0.0, 0,
-         0.348470, 0.357453, 0.358758, 0.3044790, 0.320202, 0.3228840, 0.35793, 0.343275, 0.3351760],
-        [2.417238, 2.1948980, 2.394546, 1.1507290, 0.565153, 0.505818, 0.505818, 0.51401, 0.6617230, 0.348470, 0.348470,
-         0, 0.2676570, 0.2689620, 0.214683, 0.230406, 0.2330880, 0.268134, 0.253479, 0.245380],
-        [2.426221, 2.203881, 2.403529, 1.159712, 0.574136, 0.5148010, 0.5148010, 0.523003, 0.670706, 0.357453, 0.357453,
-         0.2676570, 0, 0.057269, 0.152324, 0.168047, 0.170729, 0.205774, 0.19111, 0.183021],
-        [2.4275260, 2.2051860, 2.404834, 1.161017, 0.5754410, 0.516106, 0.516106, 0.524308, 0.672011, 0.358758, 0.358758,
-         0.2689620, 0.057269, 0, 0.153629, 0.169352, 0.172034, 0.20708, 0.192424, 0.184326],
-        [2.373247, 2.150907, 2.350555, 1.106738, 0.521162, 0.461827, 0.461827, 0.470029, 0.6177320, 0.3044790, 0.3044790,
-         0.214683, 0.152324, 0.153629, 0, 0.079009, 0.0976150, 0.132661, 0.118006, 0.109907],
-        [2.38897, 2.16663, 2.366278, 1.122461, 0.5368850, 0.47755, 0.47755, 0.485751, 0.633455, 0.320202, 0.320202,
-         0.230406, 0.168047, 0.169352, 0.079009, 0, 0.113338, 0.1483840, 0.133729, 0.12563],
-        [2.391652, 2.169312, 2.36896, 1.125143, 0.539567, 0.480232, 0.480232, 0.488434, 0.6361370, 0.3228840, 0.3228840,
-         0.2330880, 0.170729, 0.172034, 0.0976150, 0.113338, 0, 0.045912, 0.031257, 0.023158],
-        [2.426698, 2.204358, 2.404006, 1.160189, 0.574613, 0.515278, 0.515278, 0.52348, 0.6711830, 0.35793, 0.35793,
-         0.268134, 0.205774, 0.20708, 0.132661, 0.1483840, 0.045912, 0, 0.021967, 0.028214],
-        [2.412043, 2.189703, 2.389351, 1.145534, 0.559958, 0.500623, 0.500623, 0.508825, 0.656528, 0.343275, 0.343275,
-         0.253479, 0.19111, 0.192424, 0.118006, 0.133729, 0.031257, 0.021967, 0, 0.013559],
-        [2.403944, 2.181604, 2.381252, 1.137435, 0.5518590, 0.492524, 0.492524, 0.500726, 0.648429, 0.3351760, 0.3351760,
-         0.245380, 0.183021, 0.184326, 0.109907, 0.12563, 0.023158, 0.028214, 0.013559, 0]]
-
-    actualleaves = ['Ddi0002240', 'Dme0014628', 'Aga0007658', 'Cin0011239', 'Fru0004507', 'Dre0008391', 'Dre0008390',
-                    'Dre0008392', 'Xtr0044988', 'Gga0000982', 'Gga0000981', 'Mdo0014718', 'Mms0024821', 'Rno0030248',
-                    'Cfa0016700', 'Bta0018700', 'Ptr0000001', 'Hsa0010730', 'Hsa0000001', 'Hsa0010711']
-
-    for i in range(len(actualdists)):
-        for j in range(len(actualdists[i])):
-            assert round(abs(actualdists[i][j]-dists[i][j]), 4) == 0
-    assert actualleaves == leaves
-
-
+    for i in range(len(expected_dists)):
+        for j in range(len(expected_dists[i])):
+            assert round(abs(expected_dists[i][j] - dists[i][j]), 4) == 0
+    assert expected_leaves == leaves
