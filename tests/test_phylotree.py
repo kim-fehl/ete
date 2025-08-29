@@ -3,8 +3,7 @@ import pytest
 from ete4 import PhyloTree, SeqGroup
 from . import datasets as ds
 
-# Tree used by the tests.
-example_tree = '((Dme_001:1,Dme_002:1):1,(((Cfa_001:1,Mms_001:1):1,((((Hsa_001:1,Hsa_003:1):1,Ptr_001:1):1,Mmu_001:1):1,((Hsa_004:1,Ptr_004:1):1,Mmu_004:1):1):1):1,(Ptr_002:1,(Hsa_002:1,Mmu_002:1):1):1):1):0;'
+# Tree used by the tests provided by the ``phylotree_example_newick`` fixture.
 #   ╭───┬╴Dme_001
 #   │   ╰╴Dme_002
 #   │       ╭───┬╴Cfa_001
@@ -66,11 +65,11 @@ class Test_phylo_module:
         for l in t.leaves():
             assert l.props.get('sequence') == alg2.get_seq(l.name)
 
-    def test_get_sp_overlap_on_all_descendants(self):
+    def test_get_sp_overlap_on_all_descendants(self, phylotree_example_newick):
         """ Tests ortholgy prediction using the sp overlap"""
         # Creates a gene phylogeny with several duplication events at
         # different levels.
-        t = PhyloTree(example_tree,
+        t = PhyloTree(phylotree_example_newick,
                       sp_naming_function=lambda name: name[:3])
 
         # Scans the tree using the species overlap algorithm and detect all
@@ -181,11 +180,11 @@ class Test_phylo_module:
         assert t.common_ancestor([seed, 'SP3_a']).props.get('evoltype') == 'S'
         assert t.common_ancestor([seed, 'SP1_c']).props.get('evoltype') == 'S'
 
-    def test_get_sp_overlap_on_a_seed(self):
+    def test_get_sp_overlap_on_a_seed(self, phylotree_example_newick):
         """ Tests ortholgy prediction using sp overlap"""
         # Creates a gene phylogeny with several duplication events at
         # different levels.
-        t = PhyloTree(example_tree,
+        t = PhyloTree(phylotree_example_newick,
                       sp_naming_function=lambda name: name[:3])
 
         # Scans the tree using the species overlap algorithm
@@ -306,11 +305,11 @@ class Test_phylo_module:
         assert recon_tree.write(props=["evoltype"], parser=9) == \
                PhyloTree(expected_recon).write(props=["evoltype"], parser=9)
 
-    def test_miscelaneus(self):
+    def test_miscelaneus(self, phylotree_example_newick):
         """ Test several things """
         # Creates a gene phylogeny with several duplication events at
         # different levels.
-        t = PhyloTree(example_tree,
+        t = PhyloTree(phylotree_example_newick,
                       sp_naming_function=lambda name: name[:3])
 
         # Create a dictionary with relative ages for the species present in

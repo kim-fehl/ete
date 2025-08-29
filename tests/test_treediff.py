@@ -1,15 +1,5 @@
 
-from ete4.core.tree import Tree
 from ete4.tools import ete_diff as ediff
-
-
-example1_nw = '(((ao:1,(ap:1,aq:1)1:1)1:1,(ar:1,(as:1,at:1)1:1)1:1)1:1,((aa:1,ab:1)1:1,((ac:1,(ad:1,(ae:1,(af:1,(ag:1,ah:1)1:1)1:1)1:1)1:1)1:1,((ai:1,(aj:1,(ak:1,al:1)1:1)1:1)1:1,(am:1,an:1)1:1)1:1)1:1)1:1);'
-
-example2_nw = '(((2ao:1,(2ap:1,2aq:1)1:1)1:1,(2ar:1,(2as:1,2at:1)1:1)1:1)1:1,((2aa:1,2ab:1)1:1,((2ac:1,(2ad:1,(2ae:1,(2af:1,(2ag:1,2ah:1)1:1)1:1)1:1)1:1)1:1,((2ai:1,(2aj:1,(2ak:1,2al:1)1:1)1:1)1:1,(2am:1,2an:1)1:1)1:1)1:1)1:1);'
-
-example3_nw = '(((ao:1,(ap:1,2aq:1)1:1)1:1,(ar:1,(as:1,2at:1)1:1)1:1)1:1,((aa:1,ab:1)1:1,((2ac:1,(2ad:1,(2ae:1,(2af:1,(ag:1,2ah:1)1:1)1:1)1:1)1:1)1:1,((2ai:1,(aj:1,(2ak:1,al:1)1:1)1:1)1:1,(2am:1,an:1)1:1)1:1)1:1)1:1);'
-
-example4_nw = '(((2ao:1,(ap:1,aq:1)1:1)1:1,(2ar:1,(2as:1,at:1)1:1)1:1)1:1,((aa:1,2ab:1)1:1,((ac:1,(ad:1,(ae:1,(2af:1,(2ag:1,2ah:1)1:1)1:1)1:1)1:1)1:1,((ai:1,(aj:1,(2ak:1,al:1)1:1)1:1)1:1,(2am:1,an:1)1:1)1:1)1:1)1:1);'
 
 
 def almost_equal(x, y, precision=1e-6):
@@ -19,10 +9,10 @@ def almost_equal(x, y, precision=1e-6):
 class Test_Treediff:
     """Test specific methods for trees linked to treediff."""
 
-    def test_treediff_basic(self):
+    def test_treediff_basic(self, example1_tree):
         """Test tree-diff basic functionality."""
-        t1 = Tree(example1_nw)
-        t2 = t1
+        t1 = example1_tree
+        t2 = example1_tree
 
         difftable = ediff.treediff(t1, t2, prop1='name', prop2='name',
                                    dist_fn=ediff.EUCL_DIST, support=False,
@@ -34,10 +24,10 @@ class Test_Treediff:
         assert len(difftable[0]) == 7
         assert len(difftable) == 39
 
-    def test_treediff_EUCL_DIST_1(self):
+    def test_treediff_EUCL_DIST_1(self, example1_tree, example2_tree):
         """Test tree-diff EUCL_DIST distance."""
-        t1 = Tree(example1_nw)
-        t2 = Tree(example2_nw)
+        t1 = example1_tree
+        t2 = example2_tree
 
         difftable = ediff.treediff(t1, t2, prop1='name', prop2='name',
                                    dist_fn=ediff.EUCL_DIST, support=False,
@@ -46,10 +36,10 @@ class Test_Treediff:
 
         assert sum(i[0] for i in difftable) == 39
 
-    def test_treediff_EUCL_DIST_2(self):
+    def test_treediff_EUCL_DIST_2(self, example1_tree, example3_tree):
         """ Tests tree-diff EUCL_DIST distance."""
-        t1 = Tree(example1_nw)
-        t2 = Tree(example3_nw)
+        t1 = example1_tree
+        t2 = example3_tree
 
         difftable = ediff.treediff(t1, t2, prop1='name', prop2='name',
                                    dist_fn=ediff.EUCL_DIST, support=False,
@@ -58,10 +48,10 @@ class Test_Treediff:
 
         assert almost_equal(sum(i[0] for i in difftable), 19.621428)
 
-    def test_treediff_EUCL_DIST_3(self):
+    def test_treediff_EUCL_DIST_3(self, example1_tree, example3_tree):
         """ Tests tree-diff EUCL_DIST diffs"""
-        t1 = Tree(example1_nw)
-        t2 = Tree(example3_nw)
+        t1 = example1_tree
+        t2 = example3_tree
 
         difftable = ediff.treediff(t1, t2, prop1='name', prop2='name',
                                    dist_fn=ediff.EUCL_DIST, support=False,
@@ -70,10 +60,10 @@ class Test_Treediff:
 
         assert sorted(i[4] for i in difftable) == DIFFS
 
-    def test_treediff_RF_DIST_1(self):
+    def test_treediff_RF_DIST_1(self, example1_tree, example2_tree):
         """ Tests tree-diff RF_DIST distance"""
-        t1 = Tree(example1_nw)
-        t2 = Tree(example2_nw)
+        t1 = example1_tree
+        t2 = example2_tree
 
         difftable = ediff.treediff(t1, t2, prop1='name', prop2='name',
                                    dist_fn=ediff.RF_DIST, support=False,
@@ -82,10 +72,10 @@ class Test_Treediff:
 
         assert sum(i[0] for i in difftable) == 39.0
 
-    def test_treediff_RF_DIST_2(self):
+    def test_treediff_RF_DIST_2(self, example1_tree, example3_tree):
         """ Tests tree-diff RF_DIST distance"""
-        t1 = Tree(example1_nw)
-        t2 = Tree(example3_nw)
+        t1 = example1_tree
+        t2 = example3_tree
 
         difftable = ediff.treediff(t1, t2, prop1='name', prop2='name',
                                    dist_fn=ediff.RF_DIST, support=False,
@@ -94,10 +84,10 @@ class Test_Treediff:
 
         assert sum(i[0] for i in difftable) == 10.0
 
-    def test_treediff_extendend_cc(self):
+    def test_treediff_extendend_cc(self, example1_tree, example3_tree):
         """ Tests tree-diff Extended distance. Cophenetic Compared"""
-        t1 = Tree(example1_nw)
-        t2 = Tree(example3_nw)
+        t1 = example1_tree
+        t2 = example3_tree
 
         difftable = ediff.treediff(t1, t2, prop1='name', prop2='name',
                                    dist_fn=ediff.RF_DIST, support=False,
@@ -107,10 +97,10 @@ class Test_Treediff:
 
         assert sum(i[1] for i in difftable) == 863.9737020175473
 
-    def test_treediff_extendend_be(self):
+    def test_treediff_extendend_be(self, example1_tree, example3_tree):
         """ Tests tree-diff  Extended distance. Branch Extended"""
-        t1 = Tree(example1_nw)
-        t2 = Tree(example3_nw)
+        t1 = example1_tree
+        t2 = example3_tree
 
         difftable = ediff.treediff(t1, t2, prop1='name', prop2='name',
                                    dist_fn=ediff.RF_DIST, support=False,
@@ -120,10 +110,10 @@ class Test_Treediff:
 
         assert sum(i[1] for i in difftable) == 616.0
 
-    def test_treediff_reports(self):
+    def test_treediff_reports(self, example1_tree, example4_tree):
         """ Tests tree-diff Reports"""
-        t1 = Tree(example1_nw)
-        t2 = Tree(example4_nw)
+        t1 = example1_tree
+        t2 = example4_tree
 
         difftable = ediff.treediff(t1, t2, prop1='name', prop2='name',
                                    dist_fn=ediff.EUCL_DIST, support=False,
