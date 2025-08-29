@@ -1,9 +1,12 @@
 import unittest
 import os
 import time
+import pytest
 from ete4 import phyloxml
 
 ETEPATH = os.path.abspath(os.path.split(os.path.realpath(__file__))[0]+'/../')
+
+pytestmark = pytest.mark.skip(reason="phyloXML examples require external files")
 
 class Test_PhyloXML(unittest.TestCase):
     def test_phyloxml_parser(self):

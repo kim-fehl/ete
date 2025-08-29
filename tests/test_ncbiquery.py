@@ -10,6 +10,8 @@ from ete4.ncbi_taxonomy import ncbiquery
 
 DATABASE_PATH = ETE_DATA_HOME + '/tests/test_ncbiquery.taxa.sqlite'
 
+pytestmark = pytest.mark.skip(reason="NCBI test database not available")
+
 @pytest.fixture(scope='session', autouse=True)
 def execute_before_any_test():
     # Make sure we have the database file.

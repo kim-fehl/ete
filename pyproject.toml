@@ -50,6 +50,8 @@ markers = [
   "slow: marks tests as slow",
   "interactive: marks tests that require user interaction"
 ]
+testpaths = ["tests"]
+norecursedirs = ["tests/redundant"]
 
 [tool.setuptools]
 ext-modules = [
