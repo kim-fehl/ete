@@ -11,6 +11,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgl1 libegl1
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -26,4 +30,4 @@ jobs:
 
       - name: Run tests
         run: |
-          pytest -m "not interactive and not slow"
+          pytest tests -m "not interactive and not slow"
