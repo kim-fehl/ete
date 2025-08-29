@@ -23,3 +23,12 @@ from .phyloxml import Phyloxml, PhyloxmlTree
 from .utils import SVG_COLORS, COLOR_SCHEMES, random_color
 
 from .version import __version__
+
+# Tree visualization faces and helpers
+from .treeview import (
+    add_face_to_node,
+    CircleFace,
+    RectFace,
+    TextFace,
+    TreeStyle,
+)
