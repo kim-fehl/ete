@@ -263,6 +263,7 @@ def test_newick_formats(rng):
     t.populate(50, dist_fn=rng.random, support_fn=rng.random)
     for n in t.traverse():
         n.name = n.name or 'NoName'
+        n.support = n.support if n.support is not None else 1
     t.sort_descendants()
     expected_distances = [round(n.dist, 6) for n in t.traverse('postorder') if n.up]
     expected_leaf_distances = [round(n.dist, 6) for n in t]
