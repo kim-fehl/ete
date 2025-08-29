@@ -5,7 +5,7 @@ Tests of core functionality of Alignmnets objects.
 from tempfile import NamedTemporaryFile
 
 from ete4 import SeqGroup
-from . import datasets as ds
+from . import conftest as ds
 
 
 def test_fasta_parser():

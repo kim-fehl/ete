@@ -6,6 +6,7 @@ from ete4 import Tree, PhyloTree
 import ete4.treematcher as tm
 
 import pytest
+from .conftest import TREEMATCHER_CASES
 
 
 def strip(text):
@@ -43,7 +44,8 @@ def test_str():
     assert str(pattern) == str(pattern2).replace('"', "'")
 
 
-def test_search():
+@pytest.mark.parametrize("newick, expected", TREEMATCHER_CASES)
+def test_search(newick, expected):
     pattern = tm.TreePattern("""
     (
       "len(ch) > 2",
@@ -52,18 +54,11 @@ def test_search():
     "(len(name) < 3 or name == 'accept') and d >= 0.5"
     """)
 
-    for newick, expected_result in [
-            ('((hello:1,(1:1,2:1,3:1)xx:1)accept:1, NODE):0;', ['accept']),
-            ('((hello:1,(1:1,2:1,3:1)xx:1)accept:0.4, NODE):0;', []),
-            ('(hello:1,(1:1,2:1,3:1)xx:1)accept:1;', ['accept']),
-            ('((bye:1,(1:1,2:1,3:1)xx:1)none:1, NODE):0;', []),
-            ('((bye:1,(1:1,2:1,3:1)xx:1)y:1, NODE):0;', ['y']),
-            ('((bye,(,,))x:1,((,,),bye)y:1):0;', ['x', 'y'])]:
-        tree = Tree(newick, parser=1)
+    tree = Tree(newick, parser=1)
 
-        assert ([n.name for n in tm.search(pattern, tree)] ==
-                [n.name for n in pattern.search(tree)] ==
-                expected_result)
+    assert ([n.name for n in tm.search(pattern, tree)] ==
+            [n.name for n in pattern.search(tree)] ==
+            expected)
 
 
 def test_safer():

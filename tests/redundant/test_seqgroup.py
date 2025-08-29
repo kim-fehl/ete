@@ -1,7 +1,7 @@
 import unittest
 
 from ete4 import SeqGroup
-from ..datasets import *
+from ..conftest import *
 
 
 class Test_Core_SeqGroup(unittest.TestCase):

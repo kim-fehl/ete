@@ -1,7 +1,7 @@
 import pytest
 
 from ete4 import PhyloTree, SeqGroup
-from . import datasets as ds
+from . import conftest as ds
 
 # Tree used by the tests provided by the ``phylotree_example_newick`` fixture.
 #   ╭───┬╴Dme_001
