@@ -14,7 +14,16 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgl1 libegl1
+          sudo apt-get install -y libgl1 libegl1 libxkbcommon0
+
+      - name: Install Miniconda
+        run: |
+          wget -qO miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+          bash miniconda.sh -b -p $HOME/miniconda
+          echo "$HOME/miniconda/bin" >> $GITHUB_PATH
+
+      - name: Install external executables
+        run: conda install -y -c etetoolkit ete3_external_apps
 
       - name: Set up Python
         uses: actions/setup-python@v5
