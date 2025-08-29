@@ -17,6 +17,12 @@ def empty_tree():
     return Tree()
 
 
+@pytest.fixture
+def rng():
+    """Deterministic random generator for reproducible tests."""
+    return random.Random(0)
+
+
 def strip(text):
     """Return the given text stripping the empty lines and indentation."""
     # Helps compare tree visualizations.
@@ -92,7 +98,7 @@ def test_basic_properties():
     a.name = 5
     assert a.name == '5'
 
-def test_tree_read_and_write():
+def test_tree_read_and_write(rng):
     """Test newick support."""
     # Read and write newick tree from/to file.
     with NamedTemporaryFile() as f_tree:  # test reading from file
@@ -139,7 +145,7 @@ def test_tree_read_and_write():
     t = Tree("((A,B),C);")
     expected_nw = "((A,B[&&NHX:0=0:1=1:2=2:3=3:4=4:5=5:6=6:7=7:8=8:9=9:a=a:b=b:c=c:d=d:e=e:f=f:g=g:h=h:i=i:j=j:k=k:l=l:m=m:n=n:o=o:p=p:q=q:r=r:s=s:t=t:u=u:v=v:w=w]),C);"
     features = list("abcdefghijklmnopqrstuvw0123456789")
-    random.shuffle(features)
+    rng.shuffle(features)
     for letter in features:
         t['B'].add_prop(letter, letter)
     assert expected_nw == t.write(props=None)
@@ -226,14 +232,14 @@ def test_concat_trees():
     with pytest.raises(TreeError):
         mixed_types()
 
-def test_newick_formats():
+def test_newick_formats(rng):
     """Test different newick subformats."""
     NW_FORMAT = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 100]  # predefined parsers ("formats")
 
     # Let's stress a bit
     for i in range(10):
         t = Tree()
-        t.populate(4, dist_fn=random.random, support_fn=random.random)
+        t.populate(4, dist_fn=rng.random, support_fn=rng.random)
         for n in t.traverse():
             n.name = n.name or 'NoName'
             n.support = n.support or 1
@@ -253,7 +259,7 @@ def test_newick_formats():
     # Format 100 = ((,(,)),);
 
     t = Tree()
-    t.populate(50, dist_fn=random.random, support_fn=random.random)
+    t.populate(50, dist_fn=rng.random, support_fn=rng.random)
     for n in t.traverse():
         n.name = n.name or 'NoName'
     t.sort_descendants()
@@ -529,10 +535,10 @@ def test_tree_manipulation():
     assert set([n.name for n in t1.traverse()]) == \
                      set(['A', 'B', 'C', 'I', 'root'])
 
-def test_remove_child(empty_tree):
+def test_remove_child(empty_tree, rng):
     """Test removing children."""
     t = empty_tree
-    t.populate(20)
+    t.populate(20, dist_fn=rng.random, support_fn=rng.random)
 
     # Removed node loses its parent.
     node1 = t[1]
@@ -558,10 +564,10 @@ def test_remove_child(empty_tree):
     assert node0.up == t2  # but has not lost track of its parent
     assert t2[0] == node0
 
-def test_pop_child(empty_tree):
+def test_pop_child(empty_tree, rng):
     """Test popping children."""
     t = empty_tree
-    t.populate(20)
+    t.populate(20, dist_fn=rng.random, support_fn=rng.random)
 
     # Removed node loses its parent.
     node1 = t[1]
@@ -587,18 +593,18 @@ def test_pop_child(empty_tree):
     assert node0.up == t2  # but has not lost track of its parent
     assert t2[0] == node0
 
-def test_pruning():
+def test_pruning(rng):
     # test prune preserving distances
     for i in range(3):  # NOTE: each iteration is quite slow
         t = Tree()
-        t.populate(40, dist_fn=random.random, support_fn=random.random)
+        t.populate(40, dist_fn=rng.random, support_fn=rng.random)
         orig_nw = t.write()
         distances = {}
         for a in t.leaves():
             for b in t.leaves():
                 distances[(a,b)] = round(t.get_distance(a, b), 6)
 
-        to_keep = set(random.sample(list(t.leaves()), 6))
+        to_keep = set(rng.sample(list(t.leaves()), 6))
         t.prune(to_keep, preserve_branch_length=True)
         for a,b in distances:
             if a in to_keep and b in to_keep:
@@ -610,10 +616,10 @@ def test_pruning():
         t_fuzzy.sort_descendants()
         orig_nw = t_fuzzy.write()
         ref_nodes = list(t_fuzzy.descendants())
-        t_fuzzy.populate(10)
-        t_fuzzy['1'].populate(3)
-        t_fuzzy['2'].populate(5)
-        t_fuzzy['3'].populate(5)
+        t_fuzzy.populate(10, dist_fn=rng.random, support_fn=rng.random)
+        t_fuzzy['1'].populate(3, dist_fn=rng.random, support_fn=rng.random)
+        t_fuzzy['2'].populate(5, dist_fn=rng.random, support_fn=rng.random)
+        t_fuzzy['3'].populate(5, dist_fn=rng.random, support_fn=rng.random)
         t_fuzzy.prune(ref_nodes)
         t_fuzzy.sort_descendants()
         assert orig_nw == t_fuzzy.write()
@@ -622,17 +628,17 @@ def test_pruning():
     # Total number of nodes is correct (no single child nodes)
     t = Tree()
     sample_size = 5
-    t.populate(1000)
-    sample = random.sample(list(t.leaves()), sample_size)
+    t.populate(1000, dist_fn=rng.random, support_fn=rng.random)
+    sample = rng.sample(list(t.leaves()), sample_size)
     t.prune(sample)
     assert len(t) == sample_size
     assert len(list(t.descendants())) == (sample_size*2)-2
 
     # Test preserve branch dist when pruning
     t = Tree()
-    t.populate(100, dist_fn=random.random, support_fn=random.random)
+    t.populate(100, dist_fn=rng.random, support_fn=rng.random)
     sample_size = 10  # NOTE: big values make this test very slow
-    sample = random.sample(list(t.leaves()), sample_size)
+    sample = rng.sample(list(t.leaves()), sample_size)
     matrix1 = ["%f" % t.get_distance(a, b) for (a,b) in itertools.product(sample, sample)]
     t.prune(sample, preserve_branch_length=True)
     matrix2 = ["%f" % t.get_distance(a, b) for (a,b) in itertools.product(sample, sample)]
@@ -698,7 +704,7 @@ def test_common_ancestors():
     common = C.common_ancestor(["C"])
     assert common == C
 
-def test_getters_iters():
+def test_getters_iters(rng):
 
     # Iter ancestors
     t = Tree("(((((a,b)A,c)B,d)C,e)D,f)root;", parser=1)
@@ -719,11 +725,11 @@ def test_getters_iters():
     # Populate
     t = Tree(ds.nw_full)
     prev_size= len(t)
-    t.populate(25)
+    t.populate(25, dist_fn=rng.random, support_fn=rng.random)
     assert len(t) == prev_size+25
     for i in range(10):
         t = Tree()
-        t.populate(100)
+        t.populate(100, dist_fn=rng.random, support_fn=rng.random)
         # Checks that all names are actually unique
         assert len(set(t.leaf_names())) == 100
 
@@ -850,7 +856,7 @@ def test_rooting_topology():
                    ╰╴g
     """)
 
-def test_rooting_distances():
+def test_rooting_distances(rng):
     """ Tests that set_outgroup operations never changes distance relationships between nodes"""
 
     # Loads a large tree with different node distance
@@ -887,7 +893,7 @@ def test_rooting_distances():
     for i in range(100):
         for j in range(100):
             # root at a random place
-            n = random.sample(nodes, 1)[0]
+            n = rng.sample(nodes, 1)[0]
             t.set_outgroup(n)
 
         # Restore original midpoint outgroup. If everything was ok, sum up
@@ -949,7 +955,7 @@ def test_unroot():
     with pytest.raises(AssertionError):
         t.unroot(bprops=['color'])
 
-def test_tree_navigation():
+def test_tree_navigation(rng):
     t = Tree('(((A,B)H,C)I,(D,F)J)root;', parser=1)
     postorder = [n.name for n in t.traverse("postorder")]
     preorder = [n.name for n in t.traverse("preorder")]
@@ -969,7 +975,7 @@ def test_tree_navigation():
 
     # Test cached content
     t = Tree()
-    t.populate(20)
+    t.populate(20, dist_fn=rng.random, support_fn=rng.random)
 
     cache_node = t.get_cached_content()
     cache_node_leaves_only_false = t.get_cached_content(leaves_only=False)
@@ -991,22 +997,22 @@ def test_tree_navigation():
 
     #self.assertEqual(cache_name_lof[t], [t.name])
 
-def test_rooting_branch_support():
+def test_rooting_branch_support(rng):
     """Test that branch support, distances and custom branch properties are correctly handled after re-rooting."""
 
     # Generate a random tree. Test branch support and distances after rooting.
     t = Tree()
-    t.populate(50, dist_fn=random.random, support_fn=lambda: random.uniform(0, 100))
+    t.populate(50, dist_fn=rng.random, support_fn=lambda: rng.uniform(0, 100))
     t.unroot()
 
     # Add a branch property.
-    rand_value = random.random()
+    rand_value = rng.random()
     for ch in t.children:
         ch.props['bprop'] = rand_value
 
     for n in t.descendants():
         if n.up is not t:
-            n.props['bprop'] = random.random()
+            n.props['bprop'] = rng.random()
 
     # Record the distance and support value of all clades, based on its content
     names = set(t.leaf_names())
@@ -1067,13 +1073,13 @@ def test_describe():
                      'Most distant node: b\n' \
                      'Max. distance: 2'
 
-def test_treeid():
+def test_treeid(rng):
     t = Tree()
-    t.populate(50, dist_fn=random.random, support_fn=random.random)
+    t.populate(50, dist_fn=rng.random, support_fn=rng.random)
     orig_id = t.get_topology_id()
     nodes = list(t.descendants())
     for i in range(20):
-        for n in random.sample(nodes, 10):
+        for n in rng.sample(nodes, 10):
             n.reverse_children()
             assert t.get_topology_id() == orig_id
 
@@ -1091,20 +1097,20 @@ def test_node_id():
     assert t['a'].id == (0,0)
     assert t['d'].id == (1,1)
 
-def test_ultrametric():
+def test_ultrametric(rng):
     EPSILON = 1e-5  # small number for the purposes of comparing distances
 
     # Convert tree to a ultrametric, in which the distance from
     # leafs to root is always the same.
     t = Tree()
-    t.populate(80, dist_fn=random.random, support_fn=random.random)
+    t.populate(80, dist_fn=rng.random, support_fn=rng.random)
     max_dist = max(t.get_distance(t, n) for n in t)
 
     t.to_ultrametric()
     assert all(abs(t.get_distance(t, n) - max_dist) < EPSILON for n in t)
 
     t2 = Tree()
-    t2.populate(80, dist_fn=random.random, support_fn=random.random)
+    t2.populate(80, dist_fn=rng.random, support_fn=rng.random)
     max_dist = max(t2.get_distance(t2, n) for n in t2)
 
     t2.to_ultrametric(topological=True)
@@ -1230,7 +1236,7 @@ def test_expand_polytomies_rf():
 #                      (1.0, 8, 8, 0.0, 0.0, 6, 1, "NA"))
 
 # TODO: Merge this function with the previous one? (test_tree_compare())
-def test_robinson_foulds_and_more():
+def test_robinson_foulds_and_more(rng):
     # this is the result of 100 Ktreedist runs on random trees, using rooted
     # and unrooted topologies. ETE should provide the same RF result
     samples = [
@@ -1388,8 +1394,8 @@ def test_robinson_foulds_and_more():
         assert rf_max == comp['max_rf']
         assert RF == comp['rf']
         # Let's insert some random nodes, that should be ignored
-        for target in random.sample([n for n in t2.descendants() if not n.is_leaf], 5):
-            target.populate(5)
+        for target in rng.sample([n for n in t2.descendants() if not n.is_leaf], 5):
+            target.populate(5, dist_fn=rng.random, support_fn=rng.random)
         comp = t1.compare(t2, unrooted=unrooted)
         assert 20 == comp['effective_tree_size']
         assert rf_max == comp['max_rf']
@@ -1592,7 +1598,7 @@ def test_monophyly():
 
     # # Check monophyly randomization test
     # t = PhyloTree(,
-    # t.populate(100)
+    # t.populate(100, dist_fn=rng.random, support_fn=rng.random)
     # ancestor = t.common_ancestor(['aaaaaaaaaa', 'aaaaaaaaab', 'aaaaaaaaac'])
     # all_nodes = list(t.descendants())
     # # I test every possible node as root for the tree. The content of ancestor
