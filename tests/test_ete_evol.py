@@ -3,13 +3,18 @@ import multiprocessing
 CPUS = min(20, max(1, multiprocessing.cpu_count()))
 
 import unittest
+import pytest
 
 from ete4.tools import ete
 from ete4.evol.control import AVAIL
 
 BASEPATH = os.path.abspath(os.path.split(os.path.realpath(__file__))[0])
 DATAPATH = os.path.join(BASEPATH, "ete_evol_data", "S_example")
-SDATAPATH = os.path.join(BASEPATH,"ete_evol_data", "XS_example")
+SDATAPATH = os.path.join(BASEPATH, "ete_evol_data", "XS_example")
+CDATAPATH = os.path.join(BASEPATH, "ete_evol_data", "CladeModelCD")
+if not (os.path.exists(DATAPATH) and os.path.exists(SDATAPATH)):
+    pytest.skip("evolution test data not available", allow_module_level=True)
+
 OUTPATH = 'ete_test_tmp/ete4_evol-test/'
 
 
@@ -25,6 +30,7 @@ class Test_ete_evol(unittest.TestCase):
         args = cmd.split()
         ete._main(args)
 
+    @pytest.mark.skipif(not os.path.exists(CDATAPATH), reason="CladeModelCD data not available")
     def test_02_web_examples(self):
         # TODO: Download the data from the ete-data repository to a
         # temporary directory (with tempfile module?).

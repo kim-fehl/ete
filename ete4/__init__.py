@@ -23,3 +23,17 @@ from .phyloxml import Phyloxml, PhyloxmlTree
 from .utils import SVG_COLORS, COLOR_SCHEMES, random_color
 
 from .version import __version__
+
+# Tree visualization faces and helpers
+try:
+    from .treeview import (
+        add_face_to_node,
+        CircleFace,
+        RectFace,
+        TextFace,
+        TreeStyle,
+    )
+except Exception:  # pragma: no cover - optional treeview deps
+    # Tree visualization relies on optional PyQt6 and may not be
+    # available in minimal environments (e.g. during headless tests).
+    pass
