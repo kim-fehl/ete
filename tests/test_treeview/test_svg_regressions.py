@@ -33,8 +33,9 @@ def _render_svg(tree, ts):
 
 
 def _normalize(svg_text: str) -> str:
-    """Round floating point numbers to 4 decimal places for stable output."""
-    return re.sub(r"\d+\.\d+", lambda m: f"{float(m.group()):.4f}", svg_text)
+    """Round floating point numbers to 4 decimals, skipping version fields."""
+    pattern = r"(?<!version=\")(?<!version=')\d+\.\d+"
+    return re.sub(pattern, lambda m: f"{float(m.group()):.4f}", svg_text)
 
 
 @pytest.mark.usefixtures("file_regression")
