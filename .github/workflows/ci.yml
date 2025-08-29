@@ -14,20 +14,51 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgl1 libegl1
+          sudo apt-get install -y libgl1 libegl1 libxkbcommon0
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: conda-incubator/setup-miniconda@v3
         with:
+          auto-update-conda: true
           python-version: ${{ matrix.python-version }}
-          cache: 'pip'
+
+      - name: Install external executables
+        run: |
+          conda config --remove channels defaults
+          conda config --add channels conda-forge
+          conda config --add channels bioconda
+          conda config --add channels etetoolkit
+          conda install -y \
+            dialign-tx=1.0.2 \
+            fasttree \
+            t-coffee=11.00.8cbe486 \
+            argtable2=2.13 \
+            clustalo=1.2.4 \
+            consel \
+            iqtree=1.6.12 \
+            kalign2=2.04 \
+            mafft \
+            muscle=3.8.1551 \
+            paml \
+            phylobayes-mpi \
+            phyml \
+            prank \
+            probcons=1.12 \
+            raxml=8.2.13 \
+            treebest \
+            trimal=1.5.0 \
+            gcc
+          # DupTree is not available via conda or pip; build from source if needed
+          # pmodeltest is Python 2 only and is omitted
+        shell: bash -l {0}
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install cython bottle cheroot brotli numpy scipy pytest
           pip install -e .[treeview,test,doc,render_sm,treediff]
+        shell: bash -l {0}
 
       - name: Run tests
         run: |
           pytest tests -m "not interactive and not slow"
+        shell: bash -l {0}
