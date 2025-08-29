@@ -2,6 +2,8 @@ import os
 import re
 
 import pytest
+pytest.importorskip("PyQt6.QtGui")
+pytestmark = pytest.mark.interactive
 from ete4 import Tree
 from ete4.treeview import TreeStyle
 from PyQt6.QtCore import QIODevice

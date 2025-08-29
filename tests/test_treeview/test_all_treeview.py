@@ -5,7 +5,9 @@ from pathlib import Path
 
 import pytest
 
-pytest.importorskip("PyQt6")
+pytest.importorskip("PyQt6.QtGui")
+
+pytestmark = pytest.mark.interactive
 
 ETEPATH = os.path.abspath(os.path.split(os.path.realpath(__file__))[0]+'/../')
 sys.path.insert(0, ETEPATH)

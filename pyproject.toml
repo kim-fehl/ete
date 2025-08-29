@@ -45,6 +45,12 @@ treediff = [ "lap" ]
 test = [ "pytest>=6.0", "pytest-regressions" ]
 doc = [ "sphinx" ]
 
+[tool.pytest.ini_options]
+markers = [
+  "slow: marks tests as slow",
+  "interactive: marks tests that require user interaction"
+]
+
 [tool.setuptools]
 ext-modules = [
   { name = "ete4.core.tree",       sources = [ "ete4/core/tree.pyx" ] },
