@@ -1,4 +1,6 @@
+import os
 import pytest
+from ete4 import SeqGroup
 from ete4.core.tree import Tree
 from ete4 import PhyloTree
 
@@ -51,3 +53,9 @@ def phylotree_example_newick():
 @pytest.fixture
 def phylotree_example(phylotree_example_newick):
     return PhyloTree(phylotree_example_newick)
+
+
+@pytest.fixture
+def expected_seqgroup():
+    path = os.path.join(os.path.dirname(__file__), "data", "expected_sequences.fa")
+    return SeqGroup(path)
