@@ -5,6 +5,16 @@ from ete4.core.tree import Tree
 from ete4 import PhyloTree
 
 
+TREEMATCHER_CASES = [
+    ('((hello:1,(1:1,2:1,3:1)xx:1)accept:1, NODE):0;', ['accept']),
+    ('((hello:1,(1:1,2:1,3:1)xx:1)accept:0.4, NODE):0;', []),
+    ('(hello:1,(1:1,2:1,3:1)xx:1)accept:1;', ['accept']),
+    ('((bye:1,(1:1,2:1,3:1)xx:1)none:1, NODE):0;', []),
+    ('((bye:1,(1:1,2:1,3:1)xx:1)y:1, NODE):0;', ['y']),
+    ('((bye,(,,))x:1,((,,),bye)y:1):0;', ['x', 'y'])
+]
+
+
 @pytest.fixture
 def example1_newick():
     return '(((ao:1,(ap:1,aq:1)1:1)1:1,(ar:1,(as:1,at:1)1:1)1:1)1:1,((aa:1,ab:1)1:1,((ac:1,(ad:1,(ae:1,(af:1,(ag:1,ah:1)1:1)1:1)1:1)1:1)1:1,((ai:1,(aj:1,(ak:1,al:1)1:1)1:1)1:1,(am:1,an:1)1:1)1:1)1:1)1:1);'
