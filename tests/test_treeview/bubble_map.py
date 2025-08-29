@@ -16,14 +16,16 @@ def layout(node):
         # And place as a float face over the tree
         faces.add_face_to_node(C, node, 0, position="float")
 
-def get_example_tree():
+def get_example_tree(rng=None):
+    if rng is None:
+        rng = random
     # Random tree
     t = Tree()
-    t.populate(20, dist_fn=random.random, support_fn=random.random)
+    t.populate(20, dist_fn=rng.random, support_fn=rng.random)
 
     # Some random features in all nodes
     for n in t.traverse():
-        n.add_props(weight=random.randint(0, 50))
+        n.add_props(weight=rng.randint(0, 50))
 
     # Create an empty TreeStyle
     ts = TreeStyle()

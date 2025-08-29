@@ -27,11 +27,14 @@ def layout(node):
         add_face_to_node(seqFace, node, 0, position="aligned")
 
 
-def get_example_tree():
+def get_example_tree(rng=None):
     # Create a random tree and add to each leaf a random set of motifs
     # from the original set
+    if rng is None:
+        import random
+        rng = random
     t = Tree()
-    t.populate(10)
+    t.populate(10, dist_fn=rng.random, support_fn=rng.random)
     # for l in t.iter_leaves():
     #     seq_motifs = [list(m) for m in motifs] #sample(motifs, randint(2, len(motifs)))
 

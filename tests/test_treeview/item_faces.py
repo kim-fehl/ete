@@ -7,8 +7,14 @@ from ete4.treeview import faces, TreeStyle, NodeStyle, Face
 
 # We will need to create Qt4 items
 from ete4.treeview.qt import QtCore, Qt
-from ete4.treeview.qt import QGraphicsRectItem, QGraphicsSimpleTextItem, \
-    QGraphicsEllipseItem, QColor, QPen, QBrush
+from ete4.treeview.qt import (
+    QGraphicsRectItem,
+    QGraphicsSimpleTextItem,
+    QGraphicsEllipseItem,
+    QColor,
+    QPen,
+    QBrush,
+)
 
 class InteractiveItem(QGraphicsRectItem):
     def __init__(self, *arg, **karg):
@@ -40,10 +46,12 @@ class InteractiveItem(QGraphicsRectItem):
             self.label.setVisible(False)
 
 
-def random_color(h=None):
+def random_color(h=None, rng=None):
     """Generates a random color in RGB format."""
-    if not h:
-        h = random.random()
+    if rng is None:
+        rng = random
+    if h is None:
+        h = rng.random()
     s = 0.5
     l = 0.5
     return _hls2hex(h, l, s)
@@ -52,7 +60,7 @@ def _hls2hex(h, l, s):
     return '#%02x%02x%02x' %tuple(map(lambda x: int(x*255),
                                       colorsys.hls_to_rgb(h, l, s)))
 
-def ugly_name_face(node, *args, **kargs):
+def ugly_name_face(node, rng, *args, **kargs):
     """ This is my item generator. It must receive a node object, and
     returns a Qt4 graphics item that can be used as a node face.
     """
@@ -82,7 +90,7 @@ def ugly_name_face(node, *args, **kargs):
     ellipse = QGraphicsEllipseItem(masterItem.rect())
     ellipse.setParentItem(masterItem)
     # Change ellipse color
-    ellipse.setBrush(QBrush(QColor( random_color())))
+    ellipse.setBrush(QBrush(QColor(random_color(rng=rng))))
 
     # Add node name within the ellipse
     text = QGraphicsSimpleTextItem(node.name)
@@ -97,22 +105,24 @@ def ugly_name_face(node, *args, **kargs):
 
     return masterItem
 
-def master_ly(node):
+def master_ly(node, rng):
     if node.is_leaf:
         # Create an ItemFAce. First argument must be the pointer to
         # the constructor function that returns a QGraphicsItem. It
         # will be used to draw the Face. Next arguments are arbitrary,
         # and they will be forwarded to the constructor Face function.
-        F = faces.DynamicItemFace(ugly_name_face, 100, 50)
+        F = faces.DynamicItemFace(ugly_name_face, rng, 100, 50)
         faces.add_face_to_node(F, node, 0, position="aligned")
 
-def get_example_tree():
+def get_example_tree(rng=None):
+    if rng is None:
+        rng = random
 
     t = Tree()
-    t.populate(8)
+    t.populate(8, dist_fn=rng.random, support_fn=rng.random)
 
     ts = TreeStyle()
-    ts.layout_fn = master_ly
+    ts.layout_fn = lambda node: master_ly(node, rng)
     ts.title.add_face(faces.TextFace("Drawing your own Qt Faces", fsize=15), 0)
     return t, ts
 
