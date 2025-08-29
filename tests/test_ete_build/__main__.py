@@ -1,11 +1,5 @@
-import unittest
-from .test_genetree import *
-from .test_sptree import *
-from .test_manual_alg import *
-from .test_modeltest import *
+from .test_genetree import *  # noqa: F401,F403
+from .test_sptree import *  # noqa: F401,F403
+from .test_manual_alg import *  # noqa: F401,F403
+from .test_modeltest import *  # noqa: F401,F403
 
-def run():
-    unittest.main()
-
-if __name__ == '__main__':
-    run()

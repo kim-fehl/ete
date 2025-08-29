@@ -1,4 +1,3 @@
-import unittest
 import os
 import time
 import pytest
@@ -8,7 +7,7 @@ ETEPATH = os.path.abspath(os.path.split(os.path.realpath(__file__))[0]+'/../')
 
 pytestmark = pytest.mark.skip(reason="phyloXML examples require external files")
 
-class Test_PhyloXML(unittest.TestCase):
+class Test_PhyloXML:
     def test_phyloxml_parser(self):
         path = os.path.join(ETEPATH, "examples/phyloxml/")
         for fname in os.listdir(path):
@@ -33,5 +32,4 @@ class Test_PhyloXML(unittest.TestCase):
                     raise Exception("Example crashed!")
 
 
-if __name__ == '__main__':
-    unittest.main()
+

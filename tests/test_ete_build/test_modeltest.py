@@ -3,7 +3,6 @@ import multiprocessing
 
 CPUS = min(20, max(1, multiprocessing.cpu_count()-1))
 
-import unittest
 
 from ete4.tools import ete
 from ete4 import Tree, SeqGroup
@@ -20,7 +19,7 @@ def get_out_files(outdir, workflow, fasta):
     cmd = "%s/%s/commands.log" %(outdir, workflow)
     return clean_tree, extended_tree, alg_used, alg, alg_trimmed, img, cmd
 
-class Test_ete_build_modeltest(unittest.TestCase):
+class Test_ete_build_modeltest:
     def test_01_aa_genetree_worflows_with_model_test(self):
         aligners = "muscle_default", "clustalo_default", "mafft_default"
         trimmers = "none", "trimal01"
@@ -41,16 +40,15 @@ class Test_ete_build_modeltest(unittest.TestCase):
                         t2 = Tree(xtree)
                         a1 = SeqGroup(alg_used)
                         a2 = SeqGroup(alg)
-                        self.assertEqual(t1.robinson_foulds(expected_tree)[:2], [0, 12])
-                        self.assertEqual(t2.robinson_foulds(expected_tree)[:2], [0, 12])
+                        assert t1.robinson_foulds(expected_tree)[:2] == [0, 12]
+                        assert t2.robinson_foulds(expected_tree)[:2] == [0, 12]
                         if _tester != "none":
                             # This are the expected winner models given the corresponding algs (tested with the online version of prottest)
                             if wkname.startswith('mafft_default-'):
-                                self.assertEqual(wkname+t2.modeltester_bestmodel, wkname+"pmodeltest-HIVb+I+F!G")
+                                assert wkname+t2.modeltester_bestmodel == wkname+"pmodeltest-HIVb+I+F!G"
                             else:
-                                self.assertEqual(wkname+t2.modeltester_bestmodel, wkname+"pmodeltest-HIVb+G+F!I")
+                                assert wkname+t2.modeltester_bestmodel == wkname+"pmodeltest-HIVb+G+F!I"
                         if _trimmer:
                             SeqGroup(alg_trimmed)
 
-if __name__ == "__main__":
-    unittest.main()
+

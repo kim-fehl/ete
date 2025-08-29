@@ -2,7 +2,6 @@ import os
 import multiprocessing
 CPUS = min(20, max(1, multiprocessing.cpu_count()))
 
-import unittest
 import pytest
 
 from ete4.tools import ete
@@ -18,7 +17,7 @@ if not (os.path.exists(DATAPATH) and os.path.exists(SDATAPATH)):
 OUTPATH = 'ete_test_tmp/ete4_evol-test/'
 
 
-class Test_ete_evol(unittest.TestCase):
+class Test_ete_evol:
     def test_01_all_models(self):
         cmd = (f'ete4 evol'
                f'    --mark Pan_troglodytes --noimg'
@@ -54,5 +53,4 @@ class Test_ete_evol(unittest.TestCase):
         os.system('rm -rf ete_test_tmp')
 
 
-if __name__ == "__main__":
-    unittest.main()
+

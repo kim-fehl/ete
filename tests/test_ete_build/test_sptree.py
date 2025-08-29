@@ -3,7 +3,6 @@ import multiprocessing
 
 CPUS = min(20, max(1, multiprocessing.cpu_count()-1))
 
-import unittest
 
 from ete4.tools import ete
 from ete4 import Tree, SeqGroup
@@ -21,7 +20,7 @@ def get_out_files(outdir, workflow, fasta):
     return clean_tree, extended_tree, alg_used, alg, alg_trimmed, img, cmd
 
 
-class Test_ete_build_sptree(unittest.TestCase):
+class Test_ete_build_sptree:
     def test_01_sptree_worflow(self):
         gene_wkname = 'clustalo_default-trimal01-none-none'
         for wkname in "cog_all-alg_concat_default-raxml_default", "cog_all-alg_concat_default-fasttree":
@@ -34,9 +33,9 @@ class Test_ete_build_sptree(unittest.TestCase):
             t2 = Tree(xtree)
 
             expected_tree = Tree("(sp5:18.0858,((sp3:1.04727e-06,sp4:0.124439)0.49:3.18184,(sp2:1.04727e-06,sp1:1.04727e-06)0:1.04727e-06)1:18.0858);")
-            self.assertEqual(t1.robinson_foulds(expected_tree)[:2], [0, 6])
-            self.assertEqual(t2.robinson_foulds(expected_tree)[:2], [0, 6])
-            self.assertEqual(int(t2.concatalg_cogs), 3)
+            assert t1.robinson_foulds(expected_tree)[:2] == [0, 6]
+            assert t2.robinson_foulds(expected_tree)[:2] == [0, 6]
+            assert int(t2.concatalg_cogs) == 3
 
             a2 = SeqGroup(alg)
             expected_seqs = SeqGroup("""
@@ -52,7 +51,6 @@ AAAAAAAAACCCCCDDDDEEEEEEEEGGGGGGGGGGHHIIIIIIIIIILLLLLLLLLMMMM
 AAAAAAAAAPPPPPPPPPEEEEEEEEPPPPPPPPPPPP
 """)
             for name, seq, _ in a2:
-                self.assertEqual(seq.replace('-',''), expected_seqs.get_seq(name))
+                assert seq.replace('-', '') == expected_seqs.get_seq(name)
 
-if __name__ == "__main__":
-    unittest.main()
+
