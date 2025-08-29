@@ -40,4 +40,4 @@ jobs:
       # Run tests
       - name: Run Tests
         run: |
-          ./run_tests.py
+          pytest -m "not slow and not interactive"

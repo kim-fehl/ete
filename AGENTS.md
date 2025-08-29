@@ -6,9 +6,9 @@
   - Alwayes install full suite via `pip install -e .[treeview,test,doc,render_sm,treediff]`.
 
 ## Testing
-- Execute the main test suite using `./run_tests.py`. Use `-l` to list available categories.
+- Execute the main test suite using `pytest -m "not slow and not interactive"`.
+- Use `-m` to include markers like `slow` or `interactive`, and `-k` to filter tests by name.
 - Run tests with `-v` if you need extra verbose output.
-- If explicitly asked by user, run tests with `-s` to include slow tests.
-- Don't run tests with `-i` as this group of tests require user input.
+- Avoid running interactive tests unless explicitly asked by the user.
 - Ensure main tests pass before committing changes.
 

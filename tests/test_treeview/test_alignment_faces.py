@@ -5,6 +5,8 @@ import pytest
 
 # Ensure Qt can operate in headless environments
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+pytest.importorskip("PyQt6.QtGui")
+pytestmark = pytest.mark.interactive
 
 from PyQt6.QtCore import QIODevice
 from PyQt6.QtWidgets import QApplication

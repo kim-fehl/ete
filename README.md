@@ -158,11 +158,14 @@ contact jhcepas@gmail.com.
 
 # Tests
 
-You can launch some tests by running:
+You can launch the tests using [`pytest`](https://docs.pytest.org/):
 
 ```sh
-./run_tests.py
+pytest -m "not slow and not interactive"
 ```
+
+Use `-m` or `-k` to select specific subsets, such as `pytest -m slow` or
+`pytest -k tree`.
 
 
 # Contributing and bug reporting
