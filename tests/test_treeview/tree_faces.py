@@ -6,14 +6,14 @@ small_ts = TreeStyle()
 small_ts.show_leaf_name = True
 small_ts.scale = 10
 
-def layout(node):
+def layout(node, rng):
     if node.is_leaf:
-        # Add node name to laef nodes
+        # Add node name to leaf nodes
         N = AttrFace("name", fsize=14, fgcolor="black")
         faces.add_face_to_node(N, node, 0)
 
         t = Tree()
-        t.populate(10)
+        t.populate(10, dist_fn=rng.random, support_fn=rng.random)
 
         T = TreeFace(t, small_ts)
         # Let's make the sphere transparent
@@ -21,20 +21,22 @@ def layout(node):
         # And place as a float face over the tree
         faces.add_face_to_node(T, node, 1, position="aligned")
 
-def get_example_tree():
+def get_example_tree(rng=None):
+    if rng is None:
+        rng = random
     # Random tree
     t = Tree()
-    t.populate(20, dist_fn=random.random, support_fn=random.random)
+    t.populate(20, dist_fn=rng.random, support_fn=rng.random)
 
     # Some random properties in all nodes
     for n in t.traverse():
-        n.add_properties(weight=random.randint(0, 50))
+        n.add_properties(weight=rng.randint(0, 50))
 
     # Create an empty TreeStyle
     ts = TreeStyle()
 
     # Set our custom layout function
-    ts.layout_fn = layout
+    ts.layout_fn = lambda node: layout(node, rng)
 
     # Draw a tree
     ts.mode = "c"
