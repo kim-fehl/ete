@@ -14,6 +14,34 @@ TREEMATCHER_CASES = [
     ('((bye,(,,))x:1,((,,),bye)y:1):0;', ['x', 'y'])
 ]
 
+COMPLEX_NAME = "((A:0.0001[&&NHX:hello=true],B:0.011)90:0.01[&&NHX:hello=true],(C:0.01, D:0.001)hello:0.01);"
+
+QUOTED_NAME_CASES = [
+    (
+        '(("A:0.1":1,"%s":2)"C:0.00":3,"D":4);' % COMPLEX_NAME,
+        "(('A:0.1':1,'%s':2)'C:0.00':3,D:4);" % COMPLEX_NAME,
+    ),
+    (
+        '''(("A:\\"0.1\\"":1,"%s":2)"C:'0.00'":3,"D'sd'x":4);'''
+        % COMPLEX_NAME,
+        '''(('A:\\"0.1\\"':1,'%s':2)'C:''0.00''\':3,'D''sd''x':4);'''
+        % COMPLEX_NAME,
+    ),
+]
+
+CUSTOM_FORMAT_CASES = [
+    (0, '((TEST-A:1.1,TEST-B:2.2)SUP-1.0:3.3,TEST-D:4.4);'),
+    (1, '((TEST-A:1.1,TEST-B:2.2)TEST-C:3.3,TEST-D:4.4);'),
+    (2, '((TEST-A:1.1,TEST-B:2.2)SUP-1.0:3.3,TEST-D:4.4);'),
+    (3, '((TEST-A:1.1,TEST-B:2.2)TEST-C:3.3,TEST-D:4.4);'),
+    (4, '((TEST-A:1.1,TEST-B:2.2),TEST-D:4.4);'),
+    (5, '((TEST-A:1.1,TEST-B:2.2):3.3,TEST-D:4.4);'),
+    (6, '((TEST-A,TEST-B):3.3,TEST-D);'),
+    (7, '((TEST-A:1.1,TEST-B:2.2)TEST-C,TEST-D:4.4);'),
+    (8, '((TEST-A,TEST-B)TEST-C,TEST-D);'),
+    (9, '((TEST-A,TEST-B),TEST-D);'),
+]
+
 
 @pytest.fixture
 def example1_newick():

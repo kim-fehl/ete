@@ -10,6 +10,7 @@ from ete4.parser.newick import NewickError
 from ete4.parser import newick
 
 from . import datasets as ds
+from .conftest import CUSTOM_FORMAT_CASES, QUOTED_NAME_CASES, COMPLEX_NAME
 import pytest
 
 @pytest.fixture
@@ -370,47 +371,30 @@ def test_newick_multisupport():
     t = Tree(nw, parser='multisupport')
     assert t.write(parser='multisupport') == nw
 
-def test_quoted_names():
-    complex_name = "((A:0.0001[&&NHX:hello=true],B:0.011)90:0.01[&&NHX:hello=true],(C:0.01, D:0.001)hello:0.01);"
-    # A quoted tree within a tree
-    nw1 = '(("A:0.1":1,"%s":2)"C:0.00":3,"D":4);' % complex_name
-    nw1_normalized = "(('A:0.1':1,'%s':2)'C:0.00':3,D:4);" % complex_name
-    #escaped quotes
-    nw2 = '''(("A:\\"0.1\\"":1,"%s":2)"C:'0.00'":3,"D'sd'x":4);''' % complex_name
-    nw2_normalized = '''(('A:\\"0.1\\"':1,'%s':2)'C:''0.00''\':3,'D''sd''x':4);''' % complex_name
-    for nw, nw_normalized in [(nw1, nw1_normalized), (nw2, nw2_normalized)]:
-        with pytest.raises(NewickError):
-            Tree(nw, parser=0)
-        t = Tree(nw, parser=1)
-        assert any(n for n in t if n.name == '%s' % complex_name)
-        # test writing and reloading tree
-        nw_back = t.write(parser=1)
-        t2 = Tree(nw, parser=1)
-        nw_back2 = t2.write(parser=1)
-        assert nw_normalized == nw_back
-        assert nw_normalized == nw_back2
+@pytest.mark.parametrize("nw, nw_normalized", QUOTED_NAME_CASES)
+def test_quoted_names(nw, nw_normalized):
+    with pytest.raises(NewickError):
+        Tree(nw, parser=0)
+    t = Tree(nw, parser=1)
+    assert any(n for n in t if n.name == COMPLEX_NAME)
+    # test writing and reloading tree
+    nw_back = t.write(parser=1)
+    t2 = Tree(nw, parser=1)
+    nw_back2 = t2.write(parser=1)
+    assert nw_normalized == nw_back
+    assert nw_normalized == nw_back2
 
-def test_custom_formatting_formats():
+@pytest.mark.parametrize("flag, result", CUSTOM_FORMAT_CASES)
+def test_custom_formatting_formats(flag, result):
     """Test change dist, name and support formatters."""
     t = Tree('((A:1.1111,B:2.2222)C:3.3333[&&NHX:support=1],D:4.4444);',
              parser=1)
     t.sort_descendants()
 
-    check = [[0, '((TEST-A:1.1,TEST-B:2.2)SUP-1.0:3.3,TEST-D:4.4);'],
-             [1, '((TEST-A:1.1,TEST-B:2.2)TEST-C:3.3,TEST-D:4.4);'],
-             [2, '((TEST-A:1.1,TEST-B:2.2)SUP-1.0:3.3,TEST-D:4.4);'],
-             [3, '((TEST-A:1.1,TEST-B:2.2)TEST-C:3.3,TEST-D:4.4);'],
-             [4, '((TEST-A:1.1,TEST-B:2.2),TEST-D:4.4);'],
-             [5, '((TEST-A:1.1,TEST-B:2.2):3.3,TEST-D:4.4);'],
-             [6, '((TEST-A,TEST-B):3.3,TEST-D);'],
-             [7, '((TEST-A:1.1,TEST-B:2.2)TEST-C,TEST-D:4.4);'],
-             [8, '((TEST-A,TEST-B)TEST-C,TEST-D);'],
-             [9, '((TEST-A,TEST-B),TEST-D);']]
-
-    for f, result in check:
-        parser = newick.make_parser(f, dist='%0.1f', name='TEST-%s', support='SUP-%0.1f')
-        nw = t.write(parser=parser)
-        assert nw == result
+    parser = newick.make_parser(flag, dist='%0.1f', name='TEST-%s',
+                                support='SUP-%0.1f')
+    nw = t.write(parser=parser)
+    assert nw == result
 
 def test_tree_manipulation():
     """Test operations which modify the tree topology."""
