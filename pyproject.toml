@@ -42,7 +42,7 @@ ete4 = "ete4.tools.ete:main"
 treeview = [ "pyqt6" ]
 render_sm = [ "selenium" ]
 treediff = [ "lap" ]
-test = [ "pytest>=6.0" ]
+test = [ "pytest>=6.0", "pytest-regressions" ]
 doc = [ "sphinx" ]
 
 [tool.setuptools]
