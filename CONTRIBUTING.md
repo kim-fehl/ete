@@ -32,9 +32,9 @@ To run the tests, after you have a local installation (see
 [README.md](README.md) for details), you can:
 
 ```sh
-./run_tests.py
+pytest -m "not slow and not interactive"
 ```
 
-which will run the subset of the tests that should be working. You can
-use the `--list` argument to see the tests, or `--help` to see all the
-options.
+This runs the main test suite, skipping slow and interactive tests by
+default. Use `-m` to select markers such as `slow` or `interactive`, and
+`-k` to filter tests by name.

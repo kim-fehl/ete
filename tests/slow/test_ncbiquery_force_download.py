@@ -2,12 +2,14 @@
 Test the functionality of ncbiquery.py. To run with pytest.
 """
 
+import pytest
 from ete4 import ETE_DATA_HOME
 from ete4.ncbi_taxonomy import ncbiquery
 
 DATABASE_PATH = ETE_DATA_HOME + '/tests/test_ncbiquery.taxa.sqlite'
 
 
+@pytest.mark.slow
 def test_update_database():
     ncbiquery.update_db(DATABASE_PATH)
     # It will download the full NCBI taxa database and process it. Slow!
