@@ -27,7 +27,7 @@ jobs:
           conda config --add channels conda-forge
           conda config --add channels bioconda
           conda config --add channels etetoolkit
-          conda install -y \
+          conda install -q -y \
             dialign-tx=1.0.2 \
             fasttree \
             t-coffee=11.00.8cbe486 \
