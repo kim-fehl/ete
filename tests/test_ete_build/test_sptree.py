@@ -21,7 +21,7 @@ def get_out_files(outdir, workflow, fasta):
 
 
 class Test_ete_build_sptree:
-    def test_01_sptree_worflow(self):
+    def test_01_sptree_worflow(self, expected_seqgroup):
         gene_wkname = 'clustalo_default-trimal01-none-none'
         for wkname in "cog_all-alg_concat_default-raxml_default", "cog_all-alg_concat_default-fasttree":
             wkname = "cog_all-alg_concat_default-raxml_default"
@@ -38,19 +38,7 @@ class Test_ete_build_sptree:
             assert int(t2.concatalg_cogs) == 3
 
             a2 = SeqGroup(alg)
-            expected_seqs = SeqGroup("""
->sp1
-AAAAAAAAABBBBBBBBBEEEEEEEEFFFFFFFFFFFFIIIIIIIIIIKKKKKKKKKK
->sp2
-AAAAAAAAABBBBBBBBBEEEEEEEEFFFFFFFFFFFFIIIIIIIIIIKKKKKKKK
->sp3
-AAAAAAAAACCCCDDDDDEEEEEEEEGGGGGGGGGGGGIIIIIIIIIILLLLLLLLLLLL
->sp4
-AAAAAAAAACCCCCDDDDEEEEEEEEGGGGGGGGGGHHIIIIIIIIIILLLLLLLLLMMMM
->sp5
-AAAAAAAAAPPPPPPPPPEEEEEEEEPPPPPPPPPPPP
-""")
             for name, seq, _ in a2:
-                assert seq.replace('-', '') == expected_seqs.get_seq(name)
+                assert seq.replace('-', '') == expected_seqgroup.get_seq(name)
 
 
