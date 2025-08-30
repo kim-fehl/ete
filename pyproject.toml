@@ -48,7 +48,8 @@ doc = [ "sphinx" ]
 [tool.pytest.ini_options]
 markers = [
   "slow: marks tests as slow",
-  "interactive: marks tests that require user interaction"
+  "interactive: marks tests that require user interaction",
+  "network: marks tests that require network access"
 ]
 testpaths = ["tests"]
 norecursedirs = ["tests/redundant"]
