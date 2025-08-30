@@ -1,9 +1,55 @@
 import os
-import pytest
 import random
-from ete4 import SeqGroup, ETE_DATA_HOME
+import re
+
+import pytest
+
+# Ensure Qt can operate in headless mode for tests
+os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+os.environ.setdefault("QT_QPA_PLATFORMTHEME", "")
+os.environ.setdefault("QT_STYLE_OVERRIDE", "Fusion")
+# Enable faulthandler to get Python tracebacks on segmentation faults
+os.environ.setdefault("PYTHONFAULTHANDLER", "1")
+
+try:  # pragma: no cover - Optional dependency
+    from PyQt6.QtGui import QGuiApplication
+except Exception:  # pragma: no cover
+    QGuiApplication = None
+
+from ete4 import ETE_DATA_HOME, PhyloTree, SeqGroup
 from ete4.core.tree import Tree
-from ete4 import PhyloTree
+
+
+def normalize_svg(svg_text: str) -> str:
+    pattern = r"(?<!version=\")(?<!version=')\d+\.\d+"
+    return re.sub(pattern, lambda m: f"{float(m.group()):.4f}", svg_text)
+
+
+@pytest.fixture(scope="session")
+def qapp():
+    """Provide a QGuiApplication instance for Qt-based tests.
+
+    The fixture ensures a single QGuiApplication exists and explicitly tears
+    it down after the test session, helping to diagnose teardown-order
+    segmentation faults without pulling in widget styles.
+    """
+    pytest.importorskip("PyQt6.QtGui")
+    app = QGuiApplication.instance() if QGuiApplication else None
+    if app is None:
+        app = QGuiApplication([])
+    yield app
+
+    # Finalize and dump remaining Qt objects
+    try:
+        from PyQt6.QtCore import QObject, QThread
+
+        app.processEvents()
+        QObject.dumpObjectTree(app)
+        print("Active Qt thread:", QThread.currentThread())
+    except Exception:
+        pass
+    finally:
+        app.quit()
 
 DATABASE_PATH = os.path.join(ETE_DATA_HOME, 'gtdbtaxa.sqlite')
 

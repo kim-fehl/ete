@@ -40,5 +40,9 @@ jobs:
       
 
       - name: Run tests
+        env:
+          QT_QPA_PLATFORM: offscreen
+          QT_QPA_PLATFORMTHEME: ''
+          QT_STYLE_OVERRIDE: Fusion
         run: |
           pytest tests -m "not interactive and not slow"

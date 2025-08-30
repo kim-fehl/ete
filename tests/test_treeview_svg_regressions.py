@@ -1,16 +1,12 @@
-import os
-import re
-
 import pytest
+
 pytest.importorskip("PyQt6.QtGui")
-pytestmark = pytest.mark.interactive
 from ete4 import Tree
 from ete4.treeview import TreeStyle
 from PyQt6.QtCore import QIODevice
 from pathlib import Path
 
-# Ensure Qt runs in headless mode
-os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+from .conftest import normalize_svg
 
 # PyQt6 changed enum locations; provide backwards-compatible aliases
 if not hasattr(QIODevice, "WriteOnly"):
@@ -33,20 +29,17 @@ def _render_svg(tree, ts):
         svg = ast.literal_eval(svg).decode("utf-8")
     return svg
 
-
-def _normalize(svg_text: str) -> str:
-    """Round floating point numbers to 4 decimals, skipping version fields."""
-    pattern = r"(?<!version=\")(?<!version=')\d+\.\d+"
-    return re.sub(pattern, lambda m: f"{float(m.group()):.4f}", svg_text)
-
-
-@pytest.mark.usefixtures("file_regression")
-def test_svg_regressions(file_regression):
+def test_svg_regressions(qapp, file_regression):
     tree = Tree("((A,B),C);")
     ts = TreeStyle()
     ts.show_leaf_name = True
 
     svg = _render_svg(tree, ts)
-    normalized = _normalize(svg)
-    baseline = Path(__file__).with_name("expected") / "test_svg_regressions.svg"
+    normalized = normalize_svg(svg)
+    baseline = (
+        Path(__file__).parent
+        / "data"
+        / "expected"
+        / "test_treeview_svg_regressions.svg"
+    )
     file_regression.check(normalized, extension=".svg", fullpath=baseline)

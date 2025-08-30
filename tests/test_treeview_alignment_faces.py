@@ -1,33 +1,21 @@
-import os
-import re
-
 import pytest
 
-# Ensure Qt can operate in headless environments
-os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 pytest.importorskip("PyQt6.QtGui")
-pytestmark = pytest.mark.interactive
-
 from PyQt6.QtCore import QIODevice
-from PyQt6.QtWidgets import QApplication
 
 # Qt6 removed WriteOnly/ReadOnly attributes; alias them for compatibility
 if not hasattr(QIODevice, "WriteOnly"):
     QIODevice.WriteOnly = QIODevice.OpenModeFlag.WriteOnly
     QIODevice.ReadOnly = QIODevice.OpenModeFlag.ReadOnly
 
+from pathlib import Path
 from ete4 import PhyloTree
 from ete4.treeview import TreeStyle, faces
 from ete4.treeview.faces import SequenceFace
 
+from .conftest import normalize_svg
 
-@pytest.fixture(scope="module")
-def qapp():
-    app = QApplication([])
-    yield app
-
-
-def test_alignment_face_colors_and_order(qapp):
+def test_alignment_face_colors_and_order(qapp, file_regression):
     alignment = ">A\nACGT\n>B\nTGCA\n"
     tree = PhyloTree("(A,B);")
     tree.link_to_alignment(alignment, alg_format="fasta")
@@ -44,12 +32,12 @@ def test_alignment_face_colors_and_order(qapp):
 
     data = tree.render("%%return.svg", tree_style=ts)[0]
     svg = eval(data).decode().lower()
+    normalized = normalize_svg(svg)
 
-    # Colors for first sequence ACGT
-    assert re.search(
-        r"#a0a0ff.*?#ff8c4b.*?#ff7070.*?#a0ffa0", svg, re.DOTALL
+    baseline = (
+        Path(__file__).parent
+        / "data"
+        / "expected"
+        / "test_treeview_alignment_face_colors_and_order.svg"
     )
-    # Colors for second sequence TGCA
-    assert re.search(
-        r"#a0ffa0.*?#ff7070.*?#ff8c4b.*?#a0a0ff", svg, re.DOTALL
-    )
+    file_regression.check(normalized, extension=".svg", fullpath=baseline)
