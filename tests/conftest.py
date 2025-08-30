@@ -1,5 +1,6 @@
 import os
 import pytest
+import random
 from ete4 import SeqGroup
 from ete4.core.tree import Tree
 from ete4 import PhyloTree
@@ -41,6 +42,17 @@ CUSTOM_FORMAT_CASES = [
     (8, '((TEST-A,TEST-B)TEST-C,TEST-D);'),
     (9, '((TEST-A,TEST-B),TEST-D);'),
 ]
+
+
+@pytest.fixture
+def empty_tree():
+    return Tree()
+
+
+@pytest.fixture
+def rng():
+    """Deterministic random generator for reproducible tests."""
+    return random.Random(0)
 
 
 @pytest.fixture
