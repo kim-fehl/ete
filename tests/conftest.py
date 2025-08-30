@@ -1,9 +1,20 @@
 import os
 import pytest
 import random
-from ete4 import SeqGroup
+from ete4 import SeqGroup, ETE_DATA_HOME
 from ete4.core.tree import Tree
 from ete4 import PhyloTree
+
+DATABASE_PATH = os.path.join(ETE_DATA_HOME, 'gtdbtaxa.sqlite')
+
+
+@pytest.fixture(scope="session")
+def gtdb_dbfile():
+    """Return GTDB database path or skip if unavailable."""
+    if not os.path.exists(DATABASE_PATH):
+        pytest.skip(
+            "GTDB database not available. Run network tests to download it.")
+    return DATABASE_PATH
 
 @pytest.fixture
 def sp_name_fn():
