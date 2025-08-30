@@ -8,7 +8,7 @@ and Phylogeny classes.
 
 import sys
 from ._phyloxml import Clade, Phylogeny, Confidence, Tag_pattern_
-from .. import PhyloTree
+from .. import PhyloTree, Tree
 
 class PhyloxmlTree(PhyloTree):
     """PhyloTree object supporting phyloXML format."""
@@ -54,9 +54,14 @@ class PhyloxmlTree(PhyloTree):
     def _get_children(self):
         return self.phyloxml_clade.clade
 
+    def _set_children(self, children):
+        # Update both the underlying ETE tree structure and the phyloXML clade
+        Tree.children.__set__(self, children)
+        self.phyloxml_clade.clade = self._children
+
     dist = property(fget=_get_dist, fset=_set_dist)
     support = property(fget=_get_support, fset=_set_support)
-    children = property(fget=_get_children)
+    children = property(fget=_get_children, fset=_set_children)
     name = property(fget=_get_name, fset=_set_name)
 
     def __init__(self, phyloxml_clade=None, phyloxml_phylogeny=None, **kargs):

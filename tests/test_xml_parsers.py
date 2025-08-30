@@ -1,35 +1,26 @@
-import os
+from pathlib import Path
 import time
 import pytest
 from ete4 import phyloxml
 
-ETEPATH = os.path.abspath(os.path.split(os.path.realpath(__file__))[0]+'/../')
+EXAMPLE_PATH = Path(__file__).resolve().parent.parent / "examples" / "phyloxml"
+XML_FILES = sorted(EXAMPLE_PATH.glob("*.xml"))
 
-pytestmark = pytest.mark.skip(reason="phyloXML examples require external files")
 
-class Test_PhyloXML:
-    def test_phyloxml_parser(self):
-        path = os.path.join(ETEPATH, "examples/phyloxml/")
-        for fname in os.listdir(path):
-            if fname.endswith(".xml"):
-                W = open("/tmp/test_xml_parser", "w")
-                print(fname, "...", end=' ')
-                fpath = os.path.join(path, fname)
-                p = phyloxml.Phyloxml()
-                t1 = time.time()
-                p.build_from_file(fpath)
-                etime = time.time()-t1
-                print("%0.1f secs" %(etime))
-                p.export(outfile = W)
+class _Sink:
+    def write(self, _):
+        pass
 
-    def test_examples(self):
-        path = os.path.join(ETEPATH, "examples/phyloxml/")
-        for ex in os.listdir(path):
-            print("testing", ex)
-            if ex.endswith(".py"):
-                s = os.system("cd %s && python %s" %(path, ex))
-                if s:
-                    raise Exception("Example crashed!")
+
+@pytest.mark.parametrize("xml_file", XML_FILES)
+def test_phyloxml_parser(xml_file, tmp_path):
+    print(xml_file.name, "...", end=" ")
+    p = phyloxml.Phyloxml()
+    t1 = time.time()
+    p.build_from_file(str(xml_file))
+    etime = time.time() - t1
+    print(f"{etime:0.1f} secs")
+    p.export(outfile=_Sink())
 
 
 
