@@ -1,7 +1,7 @@
 """Minimal script to reproduce potential Qt segmentation faults.
 
 This script mirrors the tree rendering steps from the test suite. It
-runs the rendering in an offscreen QApplication and exits immediately.
+runs the rendering in an offscreen QGuiApplication and exits immediately.
 """
 import os
 
@@ -11,7 +11,7 @@ os.environ.setdefault("QT_QPA_PLATFORMTHEME", "")
 os.environ.setdefault("QT_STYLE_OVERRIDE", "Fusion")
 os.environ.setdefault("PYTHONFAULTHANDLER", "1")
 
-from PyQt6.QtWidgets import QApplication
+from PyQt6.QtGui import QGuiApplication
 from PyQt6.QtCore import QObject
 
 from ete4 import Tree
@@ -19,7 +19,7 @@ from ete4.treeview import TreeStyle
 
 
 def main() -> None:
-    app = QApplication([])
+    app = QGuiApplication([])
     t = Tree("(A,B);")
     ts = TreeStyle()
     # Render to a temporary file to exercise the Qt drawing pipeline

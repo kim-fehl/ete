@@ -12,9 +12,9 @@ os.environ.setdefault("QT_STYLE_OVERRIDE", "Fusion")
 os.environ.setdefault("PYTHONFAULTHANDLER", "1")
 
 try:  # pragma: no cover - Optional dependency
-    from PyQt6.QtWidgets import QApplication
+    from PyQt6.QtGui import QGuiApplication
 except Exception:  # pragma: no cover
-    QApplication = None
+    QGuiApplication = None
 
 from ete4 import ETE_DATA_HOME, PhyloTree, SeqGroup
 from ete4.core.tree import Tree
@@ -27,27 +27,23 @@ def normalize_svg(svg_text: str) -> str:
 
 @pytest.fixture(scope="session")
 def qapp():
-    """Provide a QApplication instance for Qt-based tests.
+    """Provide a QGuiApplication instance for Qt-based tests.
 
-    The fixture ensures a single QApplication exists and explicitly tears
+    The fixture ensures a single QGuiApplication exists and explicitly tears
     it down after the test session, helping to diagnose teardown-order
-    segmentation faults.
+    segmentation faults without pulling in widget styles.
     """
     pytest.importorskip("PyQt6.QtGui")
-    app = QApplication.instance() if QApplication else None
+    app = QGuiApplication.instance() if QGuiApplication else None
     if app is None:
-        app = QApplication([])
+        app = QGuiApplication([])
     yield app
 
-    # Finalize and clean up any remaining widgets/QObjects
+    # Finalize and dump remaining Qt objects
     try:
         from PyQt6.QtCore import QObject, QThread
 
-        for widget in QApplication.allWidgets():
-            widget.deleteLater()
-        # Process events so deletions are executed
         app.processEvents()
-        # Dump remaining objects and current thread for leak detection
         QObject.dumpObjectTree(app)
         print("Active Qt thread:", QThread.currentThread())
     except Exception:
