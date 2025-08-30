@@ -1,9 +1,34 @@
 import os
-import pytest
 import random
-from ete4 import SeqGroup, ETE_DATA_HOME
+import re
+
+import pytest
+
+# Ensure Qt can operate in headless mode for tests
+os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+
+try:  # pragma: no cover - Optional dependency
+    from PyQt6.QtWidgets import QApplication
+except Exception:  # pragma: no cover
+    QApplication = None
+
+from ete4 import ETE_DATA_HOME, PhyloTree, SeqGroup
 from ete4.core.tree import Tree
-from ete4 import PhyloTree
+
+
+def normalize_svg(svg_text: str) -> str:
+    pattern = r"(?<!version=\")(?<!version=')\d+\.\d+"
+    return re.sub(pattern, lambda m: f"{float(m.group()):.4f}", svg_text)
+
+
+@pytest.fixture(scope="session")
+def qapp():
+    """Provide a QApplication instance for Qt-based tests."""
+    pytest.importorskip("PyQt6.QtGui")
+    app = QApplication.instance() if QApplication else None
+    if app is None:
+        app = QApplication([])
+    yield app
 
 DATABASE_PATH = os.path.join(ETE_DATA_HOME, 'gtdbtaxa.sqlite')
 

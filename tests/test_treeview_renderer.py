@@ -1,5 +1,3 @@
-import os
-import sys
 import random
 from pathlib import Path
 
@@ -7,32 +5,29 @@ import pytest
 
 pytest.importorskip("PyQt6.QtGui")
 
-pytestmark = pytest.mark.interactive
-
-ETEPATH = os.path.abspath(os.path.split(os.path.realpath(__file__))[0]+'/../')
-sys.path.insert(0, ETEPATH)
-
-from ete4 import Tree, PhyloTree
-from ete4.treeview import TreeStyle, NodeStyle
-from ete4.treeview import faces
+from ete4 import Tree
+from ete4.treeview import TreeStyle, faces
 from ete4.treeview.faces import *
-from ete4.treeview.main import _NODE_TYPE_CHECKER, FACE_POSITIONS
+from ete4.treeview.main import FACE_POSITIONS, _NODE_TYPE_CHECKER
 
-try:  # when we run the script directly
-    import face_grid, bubble_map, item_faces, node_style, node_background, \
-        face_positions, face_rotation, seq_motif_faces, \
-        barchart_and_piechart_faces, phylotree_visualization
-except ImportError:  # when run with unittest or pytest
-    from . import face_grid, bubble_map, item_faces, node_style, \
-        node_background, face_positions, face_rotation, seq_motif_faces, \
-        barchart_and_piechart_faces, phylotree_visualization
+from .conftest import normalize_svg
+from .test_treeview import (
+    face_grid,
+    bubble_map,
+    item_faces,
+    node_style,
+    node_background,
+    face_positions,
+    face_rotation,
+    seq_motif_faces,
+    barchart_and_piechart_faces,
+    phylotree_visualization,
+)
 
 
 CONT = 0
-
-
 @pytest.mark.parametrize("seed", [0, 1])
-def test_renderer(seed, tmp_path: Path):
+def test_renderer(seed, qapp, file_regression, tmp_path: Path):
     random.seed(seed)
     rng = random.Random(seed)
 
@@ -168,14 +163,14 @@ def test_renderer(seed, tmp_path: Path):
     ms = TreeStyle()
     ms.mode = "r"
     ms.show_leaf_name = False
-    main_tree.render(str(tmp_path / 'test.png'), tree_style=ms)
-    svg_path = tmp_path / 'test.svg'
+    svg_path = tmp_path / "out.svg"
     main_tree.render(str(svg_path), tree_style=ms)
-    main_tree.render(str(tmp_path / 'test.pdf'), tree_style=ms)
-
-    assert svg_path.exists() and svg_path.stat().st_size > 0
-
-
-if __name__ == '__main__':
-    import sys
-    sys.exit(pytest.main([__file__]))
+    svg = svg_path.read_text(encoding="utf-8")
+    normalized = normalize_svg(svg)
+    baseline = (
+        Path(__file__).parent
+        / "data"
+        / "expected"
+        / f"test_treeview_renderer_seed{seed}.svg"
+    )
+    file_regression.check(normalized, extension=".svg", fullpath=baseline)
