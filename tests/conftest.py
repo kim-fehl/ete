@@ -5,6 +5,10 @@ from ete4 import SeqGroup
 from ete4.core.tree import Tree
 from ete4 import PhyloTree
 
+@pytest.fixture
+def sp_name_fn():
+    return lambda name: name[:3]
+
 
 TREEMATCHER_CASES = [
     ('((hello:1,(1:1,2:1,3:1)xx:1)accept:1, NODE):0;', ['accept']),
