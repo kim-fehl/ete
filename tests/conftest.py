@@ -6,6 +6,8 @@ import pytest
 
 # Ensure Qt can operate in headless mode for tests
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+os.environ.setdefault("QT_QPA_PLATFORMTHEME", "")
+os.environ.setdefault("QT_STYLE_OVERRIDE", "Fusion")
 # Enable faulthandler to get Python tracebacks on segmentation faults
 os.environ.setdefault("PYTHONFAULTHANDLER", "1")
 

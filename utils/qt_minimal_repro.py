@@ -7,6 +7,8 @@ import os
 
 # Force headless Qt backend
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+os.environ.setdefault("QT_QPA_PLATFORMTHEME", "")
+os.environ.setdefault("QT_STYLE_OVERRIDE", "Fusion")
 os.environ.setdefault("PYTHONFAULTHANDLER", "1")
 
 from PyQt6.QtWidgets import QApplication
